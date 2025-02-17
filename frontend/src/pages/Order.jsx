@@ -20,7 +20,7 @@ const Order = () => {
                                 <div className="">
                                     <p className='sm:text-base font-medium'>{item.name}</p>
                                     <div className="flex items-center gap-3 mt-2 text-base text-gray-600">
-                                        <p>{currency}. {item.price}</p>
+                                        <p>{currency}{item.price}</p>
                                         <p>Quantity: 1</p>
                                         <p>Size: M</p>
                                     </div>

@@ -58,7 +58,7 @@ const Product = () => {
             <div className="flex-1">
               <h1 className="text-2xl font-medium ">{productData?.name || "Unknown Product"}</h1>
               <p className="text-xl font-semibold mt-4">
-                {currency}. {productData?.price || "N/A"}
+                {currency}{productData?.price || "N/A"}
               </p>
               <p className="text-gray-600 mt-2">{productData?.description || "No description available."}</p>
               

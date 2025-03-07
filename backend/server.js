@@ -6,14 +6,21 @@ import connectDB from './config/mongodb.js'
 import connectCloudinary from './config/cloudinary.js'
 import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
+import dotenv from 'dotenv';
+
 
 // app config
 
+
+
 const app = express()
 const port = process.env.PORT || 4000
+
+dotenv.config();
+
 connectDB()
 connectCloudinary()
-
+console.log(process.env.MONGODB_URL);
 // middlewares
 app.use(express.json())
 app.use(cors())

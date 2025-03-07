@@ -5,9 +5,9 @@ dotenv.config();
 
 const connectCloudinary = async () => {
     cloudinary.config({
-        cloud_name: 'dbcjvgzpk',
-        api_key: '242246242585393',
-        api_secret: 'JMd6MBTCHmsdWJKpCgPjb1uVOuU',
+        cloud_name: process.env.CLOUDINARY_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_SECRET_KEY,
     });
 };
 

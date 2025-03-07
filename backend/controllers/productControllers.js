@@ -1,4 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
+import productModel from "../models/productModel.js";
+
 
 // function for add product
 const addProduct = async (req, res) => {
@@ -7,19 +9,18 @@ const addProduct = async (req, res) => {
             name, description, price, category, subCategory, size, bestseller, stock 
         } = req.body;
 
-        console.log("Received Data:", req.files);
+        console.log("Received Data:", req.body);
+        console.log("Received Files:", req.files); // Debugging
 
         if (!name || !description || !price || !category || !subCategory) {
             return res.json({ success: false, message: "Missing required fields" });
         }
 
-        console.log("Received Files:", req.files); // Debugging
-
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.json({ success: false, message: "No images uploaded" });
         }
 
-        // Get images
+        // Extract images from req.files
         const imageFiles = [
             req.files.image1?.[0],
             req.files.image2?.[0],
@@ -30,11 +31,11 @@ const addProduct = async (req, res) => {
         console.log("Images received:", imageFiles);
 
         let imageUrls = await Promise.all(
-            images.map(async (item) => {
-                let result = await cloudinary.uploader.upload(item.path, {resource_type: 'image'});
-                return result.secure_url
+            imageFiles.map(async (item) => {
+                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
+                return result.secure_url;
             })
-        )
+        );
 
         console.log("Uploaded image URLs:", imageUrls);
 

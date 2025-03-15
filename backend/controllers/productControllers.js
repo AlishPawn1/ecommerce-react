@@ -9,8 +9,8 @@ const addProduct = async (req, res) => {
             name, description, price, category, subCategory, size, bestseller, stock 
         } = req.body;
 
-        console.log("Received Data:", req.body);
-        console.log("Received Files:", req.files); // Debugging
+        // console.log("Received Data:", req.body);
+        // console.log("Received Files:", req.files); // Debugging
 
         if (!name || !description || !price || !category || !subCategory) {
             return res.json({ success: false, message: "Missing required fields" });
@@ -28,7 +28,7 @@ const addProduct = async (req, res) => {
             req.files.image4?.[0]
         ].filter(Boolean); // Remove undefined values
 
-        console.log("Images received:", imageFiles);
+        // console.log("Images received:", imageFiles);
 
         let imageUrls = await Promise.all(
             imageFiles.map(async (item) => {
@@ -47,7 +47,7 @@ const addProduct = async (req, res) => {
             category,
             subCategory,
             size: Array.isArray(size) ? size : size.split(","),
-            bestseller: bestseller === "true",
+            bestseller: bestseller === "true" ? true : false,
             stock: parseInt(stock, 10),
             image: imageUrls.filter(Boolean), // Remove failed uploads
             date: Date.now(),
@@ -67,19 +67,38 @@ const addProduct = async (req, res) => {
 // function for list product
 
 const listProduct = async (req, res) =>{
+    try{
+        const products = await productModel.find({});
 
+        res.status(200).json({sucess: true, message: "Product retrieved successfully", products:products})
+    }catch(error){
+        res.status(500).json({sucess: false, message: "Failed to retrived product"})
+    }
 }
 
 // function for remove product
 
 const removeProduct = async (req, res) =>{
-
+    try {
+        await productModel.findByIdAndDelete(req.body.id)
+        res.json({success: true, message: "Product Removed"})
+    } catch (error) {
+        console.error("Error in removeProduct:", error);
+        res.json({ success: false, message: error.message });
+    }
 }
 
 // function for single product
 
 const singleProduct = async (req, res) =>{
-
+    try {
+        const { productId } = req.body;
+        const product = await productModel.findById(productId);
+        res.json({ success: true, product});
+    } catch (error) {
+        console.error("Error in singleProduct:", error);
+        res.json({ success: false, message: error.message });  
+    }
 }
 
 

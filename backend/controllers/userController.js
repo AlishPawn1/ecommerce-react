@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { response } from "express";
 
 const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET);
@@ -73,6 +74,22 @@ const registerUser = async (req, res) => {
 };
 
 // route for admin login
-const adminLogin = async (req, res) => {};
+const adminLogin = async (req, res) => {
+
+    try {
+        const {email, password} = req.body;
+
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            const token = jwt.sign(email+password, process.env.JWT_SECRET);
+            res.json({success: true, token})
+        } else{
+            res.json({sucess: false, message: "Invalid Credentials"})
+        }
+    } catch (error) {
+        console.error("Error in adminLogin:", error);
+        return res.json({ success: false, message: error.message });
+    }
+
+};
 
 export { loginUser, registerUser, adminLogin };

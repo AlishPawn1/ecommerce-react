@@ -9,8 +9,7 @@ const addProduct = async (req, res) => {
             name, description, price, category, subCategory, size, bestseller, stock 
         } = req.body;
 
-        // console.log("Received Data:", req.body);
-        // console.log("Received Files:", req.files); // Debugging
+        console.log("Received Body:", req.body);  // Log to inspect the request body
 
         if (!name || !description || !price || !category || !subCategory) {
             return res.json({ success: false, message: "Missing required fields" });
@@ -20,6 +19,9 @@ const addProduct = async (req, res) => {
             return res.json({ success: false, message: "No images uploaded" });
         }
 
+        // Convert the size field from string to an array if it's a string
+        const parsedSize = Array.isArray(size) ? size : JSON.parse(size || "[]");
+
         // Extract images from req.files
         const imageFiles = [
             req.files.image1?.[0],
@@ -28,16 +30,12 @@ const addProduct = async (req, res) => {
             req.files.image4?.[0]
         ].filter(Boolean); // Remove undefined values
 
-        // console.log("Images received:", imageFiles);
-
         let imageUrls = await Promise.all(
             imageFiles.map(async (item) => {
                 let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
                 return result.secure_url;
             })
         );
-
-        console.log("Uploaded image URLs:", imageUrls);
 
         // Save product to MongoDB
         const newProduct = new productModel({
@@ -46,7 +44,7 @@ const addProduct = async (req, res) => {
             price,
             category,
             subCategory,
-            size: Array.isArray(size) ? size : size.split(","),
+            size: parsedSize,  // Use the parsed size array
             bestseller: bestseller === "true" ? true : false,
             stock: parseInt(stock, 10),
             image: imageUrls.filter(Boolean), // Remove failed uploads

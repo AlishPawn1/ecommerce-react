@@ -8,22 +8,26 @@ const Cart = () => {
     const { products, currency, cartItem, updateQuantity, navigate } = useContext(ShopContext);
     const [cartData, setCartData] = useState([]);
 
-    // Effect to update cart data whenever cartItem or products change
     useEffect(() => {
+        console.log("Cart Items:", cartItem);
+        console.log("Products:", products);
+
         const tempData = [];
         for (const items in cartItem) {
+            if (items === "undefined") continue; // Skip invalid entries
             for (const item in cartItem[items]) {
                 if (cartItem[items][item] > 0) {
                     tempData.push({
-                        id: items,
+                        _id: items, // Ensure this is the correct product ID
                         size: item,
                         quantity: cartItem[items][item],
                     });
                 }
             }
         }
+        console.log("Cart Data:", tempData);
         setCartData(tempData);
-    }, [cartItem, products]); // ✅ Fix: Added `products` dependency
+    }, [cartItem, products]);
 
     if (!products || products.length === 0) {
         console.warn("⚠️ Products data is empty.");
@@ -33,33 +37,31 @@ const Cart = () => {
     return (
         <section className="cart-section">
             <div className="container">
-                {/* Cart Title */}
                 <div className="text-2xl mb-3">
                     <Title text1="Your" text2="Cart" />
                 </div>
 
-                {/* Cart Items */}
                 <div>
                     {cartData.length > 0 ? (
                         cartData.map((item) => {
+                            // Use item._id to find the product
                             const productData = products.find(
-                                (product) => product.id === parseInt(item.id, 10) // ✅ Fix: Explicitly convert ID to number
+                                (product) => product._id === item._id // Ensure data types match
                             );
 
                             if (!productData) {
-                                console.warn(`⚠️ Product not found for ID: ${item.id}`);
-                                return null; // Prevents rendering a broken product
+                                console.warn(`⚠️ Product not found for ID: ${item._id}`);
+                                return null; // Skip rendering this item
                             }
 
                             return (
                                 <div
-                                    key={`${item.id}-${item.size}`} // ✅ Fix: Unique key
+                                    key={`${item._id}-${item.size}`} // Use item._id for the key
                                     className="py-4 border-t border-b text-gray-700 grid grid-cols-[4fr_0.5fr_0.5fr] sm:grid-cols-[4fr_2fr_0.5fr] items-center gap-4"
                                 >
-                                    {/* Product Details */}
                                     <div className="flex items-center gap-6">
                                         <img
-                                            src={productData.images?.[0] || assets.placeholderImage} // ✅ Fix: Use images array
+                                            src={productData.image?.[0] || assets.placeholderImage}
                                             className="w-16 sm:w-20"
                                             alt={productData.name}
                                         />
@@ -76,12 +78,11 @@ const Cart = () => {
                                         </div>
                                     </div>
 
-                                    {/* Quantity Input */}
                                     <input
                                         onChange={(e) => {
                                             const value = e.target.value.trim();
                                             if (value && Number(value) > 0) {
-                                                updateQuantity(item.id, item.size, Number(value));
+                                                updateQuantity(item._id, item.size, Number(value)); // Use item._id
                                             }
                                         }}
                                         type="number"
@@ -91,9 +92,8 @@ const Cart = () => {
                                         defaultValue={item.quantity}
                                     />
 
-                                    {/* Remove Icon */}
                                     <img
-                                        onClick={() => updateQuantity(item.id, item.size, 0)}
+                                        onClick={() => updateQuantity(item._id, item.size, 0)} // Use item._id
                                         className="w-4 mr-4 sm:w-5 cursor-pointer"
                                         src={assets.removeIcon}
                                         alt="Remove Item"
@@ -105,7 +105,6 @@ const Cart = () => {
                         <p className="text-center text-gray-500 mt-4">Your cart is empty.</p>
                     )}
 
-                    {/* Cart Total Section */}
                     <div className="flex justify-end my-20">
                         <div className="w-full sm:w-[450px]">
                             <CartTotal />

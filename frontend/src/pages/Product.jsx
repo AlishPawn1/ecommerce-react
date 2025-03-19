@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { ShopContext } from "../context/ShopContext"; // Fixed typo in import path
+import { ShopContext } from "../context/ShopContext";
 import RelatedProduct from "../components/RelatedProduct";
-import { assets } from "../assets/assets"; // Assuming placeholder images exist
+import { assets } from "../assets/assets";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Product = () => {
   const { productId } = useParams();
@@ -11,21 +13,27 @@ const Product = () => {
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
 
-  // Fetch product data when `products` or `productId` changes
   useEffect(() => {
     if (products.length > 0) {
-      const foundProduct = products.find(
-        (item) => item.id === Number(productId)
-      );
-
+      const foundProduct = products.find((item) => item._id === productId);
       if (foundProduct) {
         setProductData(foundProduct);
-        setImage(foundProduct.images?.[0] || assets.placeholderImage); // Fallback image
+        setImage(foundProduct.image?.[0] || assets.placeholderImage);
       } else {
         console.warn(`⚠️ Product with ID ${productId} not found.`);
       }
     }
   }, [products, productId]);
+
+  // Handle Add to Cart action
+  const handleAddToCart = () => {
+    if (!size) {
+      toast.error("Please select a size before adding to the cart.");
+      return;
+    }
+    console.log("Adding to cart - productId:", productData?._id, "size:", size); // Debugging
+    addToCart(productData?._id, size); // Use productData?._id
+  };
 
   return productData ? (
     <section className="product-detail-section">
@@ -34,8 +42,8 @@ const Product = () => {
           <div className="flex gap-12 sm:gap-12 flex-col sm:flex-row">
             {/* Product Images */}
             <div className="flex-1 flex flex-col-reverse gap-3 sm:flex-row">
-              <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-scroll justify-between sm:justify-normal sm:w-[18.7%] w-full">
-                {productData?.images?.map((item, index) => (
+              <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-auto justify-between sm:justify-normal sm:w-[18.7%] w-full">
+                {productData?.image?.map((item, index) => (
                   <img
                     key={index}
                     src={item}
@@ -56,22 +64,29 @@ const Product = () => {
 
             {/* Product Details */}
             <div className="flex-1">
-              <h1 className="text-2xl font-medium ">{productData?.name || "Unknown Product"}</h1>
+              <h1 className="text-2xl font-medium ">
+                {productData?.name || "Unknown Product"}
+              </h1>
               <p className="text-xl font-semibold mt-4">
-                {currency}{productData?.price || "N/A"}
+                {currency}
+                {productData?.price || "N/A"}
               </p>
-              <p className="text-gray-600 mt-2">{productData?.description || "No description available."}</p>
-              
+              <p className="text-gray-600 mt-2">
+                {productData?.description || "No description available."}
+              </p>
+
               {/* Size Selection */}
               {productData?.size?.length > 0 && (
                 <div className="flex flex-col gap-4 my-8">
                   <p>Select Size</p>
                   <div className="flex gap-2">
                     {productData?.size?.map((item, index) => (
-                      <button 
-                        key={index} 
-                        onClick={() => setSize(item)} 
-                        className={`border p-2 bg-gray-100 ${item === size ? 'border-orange-500' : ''}`}
+                      <button
+                        key={index}
+                        onClick={() => setSize(item)}
+                        className={`border p-2 bg-gray-100 ${
+                          item === size ? "border-orange-500" : ""
+                        }`}
                       >
                         {item}
                       </button>
@@ -81,10 +96,12 @@ const Product = () => {
               )}
 
               {/* Add to Cart Button */}
-              <button 
-                onClick={() => addToCart(productData?.id, size)} 
-                className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700 uppercase"
-                disabled={!size} // Prevent adding to cart without selecting size
+              <button
+                onClick={handleAddToCart}
+                className={`bg-black text-white px-8 py-3 text-sm uppercase active:bg-gray-700 ${
+                  !size ? "cursor-no-drop opacity-50" : "cursor-pointer"
+                }`}
+                disabled={!size}
               >
                 Add to cart
               </button>
@@ -108,16 +125,22 @@ const Product = () => {
             <p className="border px-5 py-3 text-sm">Review (122)</p>
           </div>
           <div className="flex flex-col gap-4 border p-6 text-sm text-gray-500">
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima vel esse ad dignissimos deleniti autem, molestiae eveniet excepturi, dolore culpa reprehenderit expedita placeat debitis sequi porro modi itaque voluptatibus non?</p>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta officiis unde adipisci ratione totam sit doloribus, blanditiis earum pariatur porro cum maxime, aspernatur ipsum neque voluptatum quia tempore! Quo, similique?</p>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima
+              vel esse ad dignissimos deleniti autem...
+            </p>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta
+              officiis unde adipisci ratione totam sit...
+            </p>
           </div>
         </div>
 
         {/* Display Related Products */}
         {productData?.category && (
-          <RelatedProduct 
-            category={productData.category} 
-            subCategory={productData?.subCategory} 
+          <RelatedProduct
+            category={productData.category}
+            subCategory={productData?.subCategory}
           />
         )}
       </div>

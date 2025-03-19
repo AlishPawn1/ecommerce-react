@@ -44,7 +44,7 @@ const Add = ({ token }) => {
     }
 
     // Debugging the selectedSizes
-    console.log("Selected Sizes:", selectedSizes);
+    console.log("Selected Sizes:", selectedSizes);  // Log selected sizes to verify
 
     try {
         const formData = new FormData();
@@ -87,7 +87,6 @@ const Add = ({ token }) => {
         setLoading(false);
     }
   };
-
 
   return (
     <form onSubmit={onSubmitHandler} className="flex flex-col w-full items-start gap-4 p-4 bg-white">
@@ -195,9 +194,7 @@ const Add = ({ token }) => {
           {["S", "M", "L", "XL", "XXL"].map((size) => (
             <div
               key={size}
-              className={`px-4 py-2 border rounded-lg cursor-pointer transition-all ${
-                selectedSizes.includes(size) ? "bg-black text-white" : "bg-gray-200"
-              }`}
+              className={`px-4 py-2 border rounded-lg cursor-pointer transition-all ${selectedSizes.includes(size) ? "bg-black text-white" : "bg-gray-200"}`}
               onClick={() => toggleSize(size)}
             >
               {size}

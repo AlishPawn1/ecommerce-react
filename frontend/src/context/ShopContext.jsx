@@ -13,32 +13,41 @@ const ShopContextProvider = (props) => {
     const [showSearch, setShowSearch] = useState(false);
     const [cartItem, setCartItem] = useState({});
     const [products, setProducts] = useState([]);
+    const [token, setToken] = useState([]);
     const navigate = useNavigate();
 
     // Add product to the cart
-    const addToCart = async (itemId, size) => {
-        if (!itemId || !size) {
-            toast.error('Invalid product or size');
-            return;
-        }
-
-        // Clone the cart item object to avoid direct mutation
-        let cartData = structuredClone(cartItem);
-
-        if (cartData[itemId]) {
-            if (cartData[itemId][size]) {
-                cartData[itemId][size] += 1; // Increment quantity for the given size
-            } else {
-                cartData[itemId][size] = 1; // If size doesn't exist, initialize with 1
+    const addToCart = async (req, res) => {
+        try {
+            const { userId, itemId, size } = req.body;
+    
+            if (!userId || !itemId || !size) {
+                return res.json({ success: false, message: "Missing required fields" });
             }
-        } else {
-            cartData[itemId] = {}; // Initialize the item with the given size
-            cartData[itemId][size] = 1;
+    
+            const userData = await userModel.findById(userId);
+            if (!userData) {
+                return res.json({ success: false, message: "User not found" });
+            }
+    
+            let cartData = userData.cartData || {};  // ✅ Ensure cartData is initialized
+    
+            if (!cartData[itemId]) {
+                cartData[itemId] = {};  // ✅ Ensure item exists
+            }
+            if (!cartData[itemId][size]) {
+                cartData[itemId][size] = 0;  // ✅ Ensure size exists
+            }
+            cartData[itemId][size] += 1;
+    
+            await userModel.findByIdAndUpdate(userId, { cartData });
+    
+            res.json({ success: true, message: "Added To Cart" });
+        } catch (error) {
+            console.log(error);
+            res.json({ success: false, message: error.message });
         }
-
-        setCartItem(cartData);
-        toast.success('Product Added to Cart');
-    };
+    };    
 
     // Get the total item count in the cart
     const getCartCount = () => {
@@ -119,6 +128,12 @@ const ShopContextProvider = (props) => {
         getProductData();
     }, []);
 
+    useEffect(() => {
+        if(!token && localStorage.getItem('token')){
+            setToken(localStorage.getItem('token'))
+        }
+    }, []);
+
     // Provide context values to children
     const value = {
         products,
@@ -135,6 +150,7 @@ const ShopContextProvider = (props) => {
         getCartAmount,
         navigate,
         backendUrl,
+        setToken, token,
     };
 
     return (

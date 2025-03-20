@@ -15,21 +15,21 @@ const loginUser = async (req, res) => {
         const user = await userModel.findOne({ email });
         
         if (!user) {
-            return res.json({ success: false, message: "User doesn't exist" });
+            return res.status(401).json({ success: false, message: "User doesn't exist" }); // Set status 401
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
             const token = createToken(user._id);
-            return res.json({ success: true, token });
+            return res.status(200).json({ success: true, token });  // Use 200 for success
         } else {
-            return res.json({ success: false, message: "Invalid credentials" });
+            return res.status(401).json({ success: false, message: "Invalid credentials" }); // Set status 401
         }
 
     } catch (error) {
-        console.error("Error in loginUser:", error);  // Fixed error message
-        return res.json({ success: false, message: error.message });
+        console.error("Error in loginUser:", error);
+        return res.status(500).json({ success: false, message: "Server error" }); // Use 500 for server error
     }
 };
 

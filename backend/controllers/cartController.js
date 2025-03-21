@@ -1,68 +1,85 @@
-import userModel from "../models/userModel.js"
+import userModel from "../models/userModel.js";
 
-// add products to user cart
-const addToCart = async(req, res) =>{
- try {
-    const { userId, itemId, size } = req.body
-   
-    const userData = await userModel.findById(userId)
-    let cartData = await userData.cartData;
+// Add products to user cart
+const addToCart = async (req, res) => {
+  try {
+    const { userId, itemId, size } = req.body;
 
+    // Retrieve the user data and initialize cartData if it doesn't exist
+    const userData = await userModel.findById(userId);
+    let cartData = userData.cartData || {};  // Default to empty object if cartData doesn't exist
+
+    // Check if the item already exists in the cart
     if (cartData[itemId]) {
-        if (cartData[itemId][size]) {
-            cartData[itemId][size] += 1
-        } else{
-            cartData[itemId][size] = 1 
-        }
-    } else{
-        cartData[itemId] = {}
-        cartData[itemId][size] = 1
+      // If the item exists, check if the size exists
+      if (cartData[itemId][size]) {
+        cartData[itemId][size] += 1; // Increment the quantity if size already exists
+      } else {
+        cartData[itemId][size] = 1; // Set quantity to 1 if size doesn't exist
+      }
+    } else {
+      // If the item doesn't exist, initialize it with the size and quantity
+      cartData[itemId] = { [size]: 1 };
     }
 
-    await userModel.findByIdAndUpdate(userId, {cartData})
-    res.json({ sucess: true, message: "Added To Cart"})
+    // Update the user's cart in the database
+    await userModel.findByIdAndUpdate(userId, { cartData });
 
- } catch (error) {
+    res.json({ success: true, message: "Added to cart" });
+  } catch (error) {
     console.log(error);
-    res.json({ sucess: false, message: error.message})
- }   
-}
+    res.json({ success: false, message: error.message });
+  }
+};
 
-// update products to user cart
-const updateCart = async(req, res) =>{
+// Update product quantity in user cart
+const updateCart = async (req, res) => {
+  try {
+    const { userId, itemId, size, quantity } = req.body;
 
-    try {
-        const {userId, itemId, size, quantity } = req.body 
+    // Retrieve the user data
+    const userData = await userModel.findById(userId);
+    let cartData = userData.cartData || {}; // Default to empty object if cartData doesn't exist
 
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
-
-        cartData[itemId][size] = quantity
-        
-        await userModel.findByIdAndUpdate(userId, {cartData})
-        res.json({ sucess: true, message: "Cart Updated"})
-
-    } catch (error) {
-        console.log(error);
-        res.json({ sucess: false, message: error.message})
+    // Ensure the item and size exist before updating
+    if (cartData[itemId] && cartData[itemId][size]) {
+      cartData[itemId][size] = quantity; // Update the quantity for the specified item and size
+    } else {
+      return res.json({ success: false, message: "Item or size not found in cart" });
     }
 
-}
-// get user cart
-const getUserCart = async(req, res) =>{
+    // Update the user's cart in the database
+    await userModel.findByIdAndUpdate(userId, { cartData });
 
-    try {
-        const {userId} = req.body
+    res.json({ success: true, message: "Cart updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
 
-        const userData = await userModel.findById(userId)
-        let cartData = await userData.cartData;
+// Get user cart with total item count
+const getUserCart = async (req, res) => {
+  try {
+    const { userId } = req.body;
 
-        res.json({ success: true, cartData})
+    // Retrieve the user data and get the cart
+    const userData = await userModel.findById(userId);
+    const cartData = userData.cartData || {}; // Default to empty object if cartData doesn't exist
 
-    } catch (error) {
-        console.log(error);
-        res.json({ sucess: false, message: error.message})
+    // Calculate total count of items in the cart
+    let totalCount = 0;
+    for (const itemId in cartData) {
+      for (const size in cartData[itemId]) {
+        totalCount += cartData[itemId][size]; // Sum up the quantities
+      }
     }
-}
 
-export { addToCart, updateCart, getUserCart }
+    res.json({ success: true, cartData, totalCount }); // Include totalCount in the response
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { addToCart, updateCart, getUserCart };

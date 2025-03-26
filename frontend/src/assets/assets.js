@@ -22,7 +22,7 @@ import esewa from './esewa.png'
 import esewaLogo from './esewaLogo.png'
 import khalti from './khalti.png'
 import khaltiLogo from './khaltiLogo.png'
-import stripeLogo from './stripeLogo.svg'
+import stripe from './stripeLogo.svg'
 
 
 import productImage1 from './product-image-1.jpg';
@@ -66,7 +66,7 @@ export const assets = {
   esewaLogo,
   khalti,
   khaltiLogo,
-  stripeLogo,
+  stripe,
 };
 
 export const products = [

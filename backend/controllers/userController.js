@@ -25,8 +25,8 @@ const loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid credentials" });
         }
 
-        // Create a token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        // Create a token without expiration time
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
         // Send the token, userId, and userName in the response
         res.status(200).json({
@@ -40,6 +40,7 @@ const loginUser = async (req, res) => {
         res.status(500).json({ success: false, message: "Login failed" });
     }
 };
+
 
 // Route for user registration
 const registerUser = async (req, res) => {

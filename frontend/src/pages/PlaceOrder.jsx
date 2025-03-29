@@ -35,95 +35,71 @@ const PlaceOrder = () => {
 
     const onSubmitHandler = async (e) => {
         e.preventDefault();
-
+    
         try {
-            if (!Object.keys(cartItem).length) {
-                toast.error("Your cart is empty. Please add items to proceed.");
-                return;
-            }
-
             let orderItems = [];
-            let invalidItems = false;
-
-            Object.entries(cartItem).forEach(([productId, sizes]) => {
-                Object.entries(sizes).forEach(([size, quantity]) => {
-                    if (quantity > 0) {
-                        const itemInfo = products.find((p) => p._id === productId);
-                        if (!itemInfo) {
-                            console.error("⚠️ Product not found for ID:", productId);
-                            invalidItems = true;
-                            return;
+    
+            for (const items in cartItem) {
+                for (const item in cartItem[items]) {
+                    if (cartItem[items][item] > 0) {
+                        const itemInfo = structuredClone(products.find(product => product._id === items))
+                        if (itemInfo) {
+                            itemInfo.size = item
+                            itemInfo.quantity = cartItem[items][item]
+                            orderItems.push(itemInfo)
                         }
-                        orderItems.push({ ...itemInfo, size, quantity });
                     }
-                });
-            });
-
-            if (invalidItems) {
-                toast.error("Some items in your cart are no longer available. Please review your cart.");
-                return;
+                }
             }
-
-            if (!orderItems.length) {
-                toast.error("No valid items found in the cart.");
-                return;
-            }
-
-            const userId = localStorage.getItem("userId");
-            if (!userId) {
-                toast.error("User ID not found. Please log in again.");
-                return;
-            }
-
-            const orderData = {
-                userId,
-                items: orderItems,
-                amount: getCartAmount() + delivery_fee,
+    
+            let orderData = {
                 address: formData,
-                paymentMethod: method, // Include the selected payment method
-            };
-
-            if (!backendUrl) {
-                console.error("Backend URL is not defined.");
-                toast.error("Server connection issue.");
-                return;
+                items: orderItems,
+                amount: getCartAmount() + delivery_fee
             }
-
-            console.log("Sending order data:", orderData);
-
-            const response = await axios.post(`${backendUrl}/api/order/place`, orderData, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
-            if (response.data.success) {
-                setCartItems({}); // Clear the cart
-                toast.success("Order placed successfully!");
-
-                // Navigate to the /orders page
-                navigate("/orders");
-            } else {
-                toast.error(response.data.message || "Order failed.");
+    
+            switch (method) {
+                case 'cod':
+                    const response = await axios.post(backendUrl + '/api/order/place', orderData, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    });
+    
+                    if (response.data.success) {
+                        setCartItems({})
+                        navigate('/order')
+                    } else {
+                        toast.error(response.data.message)
+                    }
+                    break;
+    
+                case 'stripe':
+                    console.log("Order Data:", orderData); 
+                    const responseStripe = await axios.post(backendUrl + '/api/order/stripe', orderData, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    });
+    
+                    if (responseStripe.data.success) {
+                        const { session_url } = responseStripe.data
+                        window.location.replace(session_url);
+                    } else {
+                        toast.error(responseStripe.data.message)
+                    }
+                    break;
+                
+                default:
+                    break;
             }
         } catch (error) {
-            console.error("Error processing order:", error);
-            toast.error("Failed to process order. Please try again.");
+            console.error("Order placement error:", error);
             if (error.response) {
-                console.error("Response data:", error.response.data);
-                console.error("Response status:", error.response.status);
-                console.error("Response headers:", error.response.headers);
-
-                // Handle specific errors
-                if (error.response.status === 401) {
-                    toast.error("Your session has expired. Please log in again.");
-                } else if (error.response.status === 404) {
-                    toast.error("The order placement endpoint was not found. Please contact support.");
-                }
+                // The request was made and the server responded with a status code
+                toast.error(error.response.data.message || "Failed to place order");
             } else if (error.request) {
-                console.error("No response received:", error.request);
-                toast.error("No response from the server. Please check your connection.");
+                // The request was made but no response was received
+                toast.error("No response from server. Please try again.");
             } else {
-                console.error("Error message:", error.message);
-                toast.error("An unexpected error occurred. Please try again.");
+                // Something happened in setting up the request
+                toast.error("Error setting up order request.");
             }
         }
     };

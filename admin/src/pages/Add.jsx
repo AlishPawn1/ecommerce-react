@@ -44,7 +44,7 @@ const Add = ({ token }) => {
     }
 
     // Debugging the selectedSizes
-    console.log("Selected Sizes:", selectedSizes);  // Log selected sizes to verify
+    // console.log("Selected Sizes:", selectedSizes);  // Log selected sizes to verify
 
     try {
         const formData = new FormData();

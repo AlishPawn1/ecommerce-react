@@ -1,8 +1,12 @@
 import orderModel from '../models/orderModel.js';
 import userModel from '../models/userModel.js';
-import stripePackage from 'stripe';
+import Stripe from 'stripe';
 
-const stripe = stripePackage(process.env.STRIPE_SECRET_KEY);
+// global variables
+const currency = 'Nrp'
+const deliveryCharge = 10
+// gateway initilize
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Placing order using COD Method
 const placeOrder = async (req, res) => {
@@ -37,55 +41,98 @@ const placeOrder = async (req, res) => {
 };
 
 // Placing order using Stripe Method
+// Placing order using Stripe Method
 const placeOrderStripe = async (req, res) => {
     try {
-        const { userId, items, amount, address, paymentInfo } = req.body;
+        const { userId, items, amount, address } = req.body;
+        const origin = req.headers.origin;
 
-        // Create a payment intent with Stripe
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: amount * 100, // Convert to cents
-            currency: 'usd',
-            payment_method: paymentInfo.paymentMethodId,
-            confirmation_method: 'manual',
-            confirm: true,
-        });
-
-        if (paymentIntent.status === 'succeeded') {
-            const orderData = {
-                userId,
-                items,
-                address,
-                amount,
-                paymentMethod: 'Stripe',
-                payment: true,
-                date: Date.now(),
-            };
-
-            const newOrder = new orderModel(orderData);
-            await newOrder.save();
-
-            // Clear the user's cart after placing the order
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
-
-            res.status(201).json({
-                success: true,
-                message: 'Order placed successfully using Stripe',
-                order: newOrder,
-            });
-        } else {
-            res.status(400).json({
+        // Validate amount (minimum 50 cents equivalent)
+        if (amount < 50) {
+            return res.status(400).json({
                 success: false,
-                message: 'Payment failed using Stripe',
+                message: 'Amount must be at least 50 (equivalent to 0.50 currency units)'
             });
         }
+
+        // Create order record first (unpaid)
+        const orderData = {
+            userId,
+            items,
+            address,
+            amount,
+            paymentMethod: 'Stripe',
+            payment: false,
+            date: Date.now(),
+        };
+
+        const newOrder = new orderModel(orderData);
+        await newOrder.save();
+
+        // Prepare line items for Stripe
+        const line_items = items.map((item) => ({
+            price_data: {
+                currency: 'npr', // Stripe uses lowercase currency codes
+                product_data: {  // Fixed spelling
+                    name: item.name,
+                },
+                unit_amount: Math.round(item.price * 100) // Ensure integer
+            },
+            quantity: item.quantity // Fixed: use quantity property
+        }));
+
+        // Add delivery charge if applicable
+        if (deliveryCharge > 0) {
+            line_items.push({
+                price_data: {
+                    currency: 'npr',
+                    product_data: {
+                        name: "Delivery Charges",
+                    },
+                    unit_amount: deliveryCharge * 100
+                },
+                quantity: 1
+            });
+        }
+
+        // Create Stripe session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items,
+            mode: 'payment',
+            success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
+            cancel_url: `${origin}/verify?success=false&orderId=${newOrder._id}`,
+        });
+
+        res.json({ success: true, session_url: session.url }); // Fixed property name
     } catch (error) {
+        console.error("Stripe Error:", error);
         res.status(500).json({
             success: false,
-            message: 'Failed to place order using Stripe',
+            message: 'Failed to create Stripe session',
             error: error.message,
         });
     }
 };
+
+// verify stripe
+
+const verifyStripe = async (req, res) => {
+    const { orderId, success, userId } = req.body
+    try {
+        if (success === "true") {
+            await orderModel.findByIdAndUpdate(orderId, {payment: true})
+            await userModel.findByIdAndUpdate(userId, {cartData: {}})
+            res.json({success: true});
+        } else{
+            await orderModel.findByIdAndDelete(orderId);
+            res.json({success: false});
+        }
+    } catch (error) {
+        console.log(error);
+        res.json({success: false, message:error.message});    
+    }
+}
 
 // Placing order using Khalti Method
 const placeOrderKhalti = async (req, res) => {
@@ -217,24 +264,16 @@ const userOrder = async (req, res) => {
 // Update order status from Admin Panel
 const updateStatus = async (req, res) => {
     try {
-        const { orderId, newStatus } = req.body;
-
+        const { orderId, status } = req.body;
         const updatedOrder = await orderModel.findByIdAndUpdate(
-            orderId,
-            { status: newStatus },
-            { new: true } // Return the updated order
+            orderId, 
+            { status }, 
+            { new: true }
         );
-
-        if (!updatedOrder) {
-            return res.status(404).json({
-                success: false,
-                message: 'Order not found',
-            });
-        }
-
-        res.status(200).json({
+        
+        res.json({
             success: true,
-            message: `Order #${orderId} status updated to ${newStatus}`,
+            message: `Order #${orderId} status updated to ${status}`,
             order: updatedOrder,
         });
     } catch (error) {
@@ -247,6 +286,7 @@ const updateStatus = async (req, res) => {
 };
 
 export {
+    verifyStripe,
     placeOrder,
     placeOrderStripe,
     placeOrderKhalti,

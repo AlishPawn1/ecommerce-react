@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "backend/server.js",
+            "src": "server.js",
             "use": "@vercel/node",
             "config": {
                 "includeFiles": [
-                    "backend/**/*.js",
-                    "backend/**/*.json",
-                    "backend/.env",
-                    "!backend/node_modules/**"
+                    "**/*.js",
+                    "**/*.json",
+                    ".env",
+                    "!node_modules/**"
                 ]
             }
         }
@@ -17,20 +17,8 @@
     "routes": [
         {
             "src": "/api/(.*)",
-            "dest": "backend/server.js",
-            "methods": [
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "PATCH",
-                "OPTIONS"
-            ]
-        },
-        {
-            "src": "/(.*)",
-            "dest": "public/index.html",
-            "continue": true
+            "dest": "server.js",
+            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
         }
     ],
     "env": {

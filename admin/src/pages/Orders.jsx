@@ -16,11 +16,12 @@ const Orders = ({ token }) => {
       const response = await axios.post(
         backendUrl + "/api/order/list",
         {},
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
         setOrders(response.data.orders);
       } else {
+        console.log(response.data.message);
         toast.error(response.data.message);
       }
     } catch (error) {
@@ -34,7 +35,7 @@ const Orders = ({ token }) => {
     const response = await axios.post(
       backendUrl + '/api/order/status',
       { orderId, status: event.target.value },
-      { headers: { token } }  // Changed from Authorization header to just token
+      { headers: { Authorization: `Bearer ${token}` } } 
     );
     if (response.data.success) {
       await fetchAllOrders();

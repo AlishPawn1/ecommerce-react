@@ -2,21 +2,21 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { backendUrl } from '../App';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'; // Changed from Navigate to useNavigate
 
 const Login = ({setToken}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate(); // Initialize the navigate function
 
     const onSubmitHandler = async (e) => {
         try {
             e.preventDefault();
-            // console.log("Submitting:", email, password); // Debugging log
             const response = await axios.post(backendUrl + '/api/user/admin', { email, password });
-    
-            // console.log("Response:", response.data); // Debugging log
     
             if (response.data.success) {
                 setToken(response.data.token);
+                navigate('/dashboard');
             } else {
                 toast.error(response.data.message);
             }
@@ -63,4 +63,4 @@ const Login = ({setToken}) => {
     );
 };
 
-export default Login;
+export default Login;   

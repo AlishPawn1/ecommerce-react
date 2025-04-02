@@ -16,6 +16,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import Test from './pages/Test'
 import Verify from './pages/Verify'
 
+export const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 const App = () => {
   return (
     <div className='main-content'>

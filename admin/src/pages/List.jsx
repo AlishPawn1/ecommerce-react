@@ -2,117 +2,249 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { backendUrl, currency } from '../App';
 import { toast } from 'react-toastify';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const List = () => {
   const [list, setList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 10;
+  const [loading, setLoading] = useState(false);
 
   const fetchList = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(backendUrl + '/api/product/list');
 
-      console.log(response.data.products); // Log the product list for debugging
-
       if (response.data.products) {
-        setList(response.data.products); // Set the list state with the fetched products
+        setList(response.data.products);
       } else {
         toast.error(response.data.message || 'Failed to fetch products');
       }
     } catch (error) {
       toast.error(error.message || 'Error occurred while fetching products');
+    } finally {
+      setLoading(false);
     }
   };
 
+  const filteredProducts = list.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.category &&
+        product.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      product._id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
   useEffect(() => {
-    fetchList(); // Fetch the product list when the component mounts
+    fetchList();
   }, []);
 
   const removeProduct = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
+
     try {
-      const response = await axios.post(backendUrl + '/api/product/remove', { id }, { headers: { token } });
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        backendUrl + '/api/product/remove',
+        { id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       if (response.data.success) {
         toast.success(response.data.message);
-
-        // Remove the deleted product from the list state without re-fetching
-        setList((prevList) => prevList.filter((product) => product._id !== id)); 
+        setList((prevList) => prevList.filter((product) => product._id !== id));
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.message || 'Error occurred while deleting the product');
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || 'Error occurred while deleting the product'
+      );
     }
   };
 
   return (
-    <>
-      <p className="text-xl font-semibold mb-4">All Product List</p>
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto bg-white border-collapse shadow-md rounded-lg">
-          <thead className="bg-gray-800 text-white">
-            <tr>
-              <th className="px-4 py-2 text-left">Image</th>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Description</th>
-              <th className="px-4 py-2 text-left">Price</th>
-              <th className="px-4 py-2 text-left">Category</th>
-              <th className="px-4 py-2 text-left">SubCategory</th>
-              <th className="px-4 py-2 text-left">Sizes</th>
-              <th className="px-4 py-2 text-left">Stock</th>
-              <th className="px-4 py-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-700">
-            {list.length > 0 ? (
-              list.map((product) => (
-                <tr key={product._id} className="border-b hover:bg-gray-100">
-                  <td className="px-4 py-2">
-                    {product.image && product.image[0] ? (
-                      <img
-                        src={product.image[0]} // Assuming the image is in the first position in the array
-                        alt={product.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
-                    ) : (
-                      <span>No image</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2">{product.name}</td>
-                  <td className="px-4 py-2">{product.description}</td>
-                  <td className="px-4 py-2">{currency}{product.price}</td>
-                  <td className="px-4 py-2">{product.category}</td>
-                  <td className="px-4 py-2">{product.subCategory}</td>
-                  <td className="px-4 py-2">
-                    {product.size && product.size.length > 0
-                      ? product.size.join(', ') // Join array of sizes into a string
-                      : 'No sizes available'}
-                  </td>
-                  <td className="px-4 py-2">{product.stock}</td>
-                  <td className="px-4 py-2">
-                    {/* Add your edit and delete actions here */}
-                    <button className="px-3 py-1 bg-blue-500 text-white cursor-pointer rounded-md hover:bg-blue-600 transition duration-200">
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => removeProduct(product._id)}  // Use _id for the delete
-                      className="px-3 py-1 bg-red-500 text-white cursor-pointer rounded-md hover:bg-red-600 transition duration-200 ml-2"
+    <section className="py-4">
+      <div className="container">
+        <div className="card shadow-sm mb-4">
+          <div className="card-body">
+            <div className="row justify-content-between align-items-center">
+              <div className="col-md-6 mb-3 mb-md-0">
+                <div className="input-group">
+                  <span className="input-group-text">
+                    <i className="fa-solid fa-magnifying-glass"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="col-md-4 text-md-end">
+                <span className="text-muted">
+                  Showing {filteredProducts.length} products
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h2 className="h4 mb-4">All Product List</h2>
+
+        {loading ? (
+          <div className="d-flex justify-content-center py-5">
+            <LoadingSpinner size="lg" color="primary" className="my-5" />
+          </div>
+        ) : (
+          <>
+            <div className="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Category</th>
+                    <th>SubCategory</th>
+                    <th>Sizes</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentProducts.length > 0 ? (
+                    currentProducts.map((product) => (
+                      <tr key={product._id}>
+                        <td>
+                          {product.image?.[0] ? (
+                            <img
+                              src={product.image[0]}
+                              alt={product.name}
+                              className="img-thumbnail"
+                              style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'cover',
+                              }}
+                            />
+                          ) : (
+                            <span className="text-muted">No image</span>
+                          )}
+                        </td>
+                        <td>{product.name}</td>
+                        <td
+                          className="text-truncate"
+                          style={{ maxWidth: '200px' }}
+                          title={product.description}
+                        >
+                          {product.description}
+                        </td>
+                        <td>
+                          {currency}
+                          {product.price}
+                        </td>
+                        <td>{product.category || '-'}</td>
+                        <td>{product.subCategory || '-'}</td>
+                        <td>
+                          {product.size?.length > 0
+                            ? product.size.join(', ')
+                            : '-'}
+                        </td>
+                        <td>{product.stock}</td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <button className="btn btn-blue">Edit</button>
+                            <button
+                              onClick={() => removeProduct(product._id)}
+                              className="btn btn-red"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="text-center py-4">
+                        {list.length === 0
+                          ? 'No products available.'
+                          : 'No products match your search.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {totalPages > 1 && (
+              <nav className="mt-4">
+                <ul className="pagination justify-content-center">
+                  <li
+                    className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
                     >
-                      Delete
+                      Previous
                     </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="px-4 py-2 text-center">
-                  No products available.
-                </td>
-              </tr>
+                  </li>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <li
+                        key={page}
+                        className={`page-item ${currentPage === page ? 'active' : ''}`}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    )
+                  )}
+
+                  <li
+                    className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             )}
-          </tbody>
-        </table>
+          </>
+        )}
       </div>
-    </>
+    </section>
   );
 };
 

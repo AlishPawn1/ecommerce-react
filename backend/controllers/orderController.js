@@ -41,7 +41,6 @@ const placeOrder = async (req, res) => {
 };
 
 // Placing order using Stripe Method
-// Placing order using Stripe Method
 const placeOrderStripe = async (req, res) => {
     try {
         const { userId, items, amount, address } = req.body;
@@ -136,94 +135,12 @@ const verifyStripe = async (req, res) => {
 
 // Placing order using Khalti Method
 const placeOrderKhalti = async (req, res) => {
-    try {
-        const { userId, items, amount, address, paymentInfo } = req.body;
-
-        // Mock Khalti payment integration
-        // Replace this with actual Khalti API calls
-        const paymentSuccess = true; // Assume payment is successful
-
-        if (paymentSuccess) {
-            const orderData = {
-                userId,
-                items,
-                address,
-                amount,
-                paymentMethod: 'Khalti',
-                payment: true,
-                date: Date.now(),
-            };
-
-            const newOrder = new orderModel(orderData);
-            await newOrder.save();
-
-            // Clear the user's cart after placing the order
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
-
-            res.status(201).json({
-                success: true,
-                message: 'Order placed successfully using Khalti',
-                order: newOrder,
-            });
-        } else {
-            res.status(400).json({
-                success: false,
-                message: 'Payment failed using Khalti',
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Failed to place order using Khalti',
-            error: error.message,
-        });
-    }
+    
 };
 
 // Placing order using Esewa Method
 const placeOrderEsewa = async (req, res) => {
-    try {
-        const { userId, items, amount, address, paymentInfo } = req.body;
-
-        // Mock Esewa payment integration
-        // Replace this with actual Esewa API calls
-        const paymentSuccess = true; // Assume payment is successful
-
-        if (paymentSuccess) {
-            const orderData = {
-                userId,
-                items,
-                address,
-                amount,
-                paymentMethod: 'Esewa',
-                payment: true,
-                date: Date.now(),
-            };
-
-            const newOrder = new orderModel(orderData);
-            await newOrder.save();
-
-            // Clear the user's cart after placing the order
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
-
-            res.status(201).json({
-                success: true,
-                message: 'Order placed successfully using Esewa',
-                order: newOrder,
-            });
-        } else {
-            res.status(400).json({
-                success: false,
-                message: 'Payment failed using Esewa',
-            });
-        }
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Failed to place order using Esewa',
-            error: error.message,
-        });
-    }
+    
 };
 
 // All orders data for admin panel

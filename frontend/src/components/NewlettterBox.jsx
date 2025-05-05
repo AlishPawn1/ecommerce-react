@@ -6,7 +6,7 @@ const NewlettterBox = () => {
     }
 
   return (
-    <section className='newletter-secction my-10'>
+    <section className='newletter-secction my-10 pt-10'>
         <div className='container'>
             <div className='text-center'>
                 <h2 className='text-2xl font-medium text-gray-800'>Subscribe now & get 20% off</h2>

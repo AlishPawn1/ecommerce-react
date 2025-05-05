@@ -15,6 +15,8 @@ import SearchBar from './components/SearchBar'
 import { ToastContainer, toast } from 'react-toastify';
 import Test from './pages/Test'
 import Verify from './pages/Verify'
+import WOW from "wow.js";
+import "animate.css";
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -26,6 +28,7 @@ const App = () => {
       <SearchBar/>
       <Routes>
         <Route path='/' element={<Home/>}/>
+        <Route path="/verify" element={<Login />} />
         <Route path='/collection' element={<Collection/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/contact' element={<Contact/>}/>

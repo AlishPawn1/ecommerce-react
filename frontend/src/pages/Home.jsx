@@ -4,17 +4,21 @@ import LatestCollection from '../components/LatestCollection'
 import BestSeller from '../components/BestSeller'
 import OurPolicy from '../components/OurPolicy'
 import NewlettterBox from '../components/NewlettterBox'
+import BannerSlider from '../components/BannerSlider'
+import DealSection from '../components/DealSection'
 
 const Home = () => {
-  return (
-    <main>
-      <Hero/>
-      <LatestCollection/>
-      <BestSeller/>
-      <OurPolicy/>
-      <NewlettterBox/>
-    </main>
-  )
+    return (
+        <main>
+            <BannerSlider/>
+            <OurPolicy/>
+            <DealSection/>
+            <LatestCollection/>
+            <Hero/>
+            <BestSeller/>
+            <NewlettterBox/>
+        </main>
+    )
 }
 
 export default Home

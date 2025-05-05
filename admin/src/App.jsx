@@ -59,7 +59,7 @@ const App = () => {
                 <Route path="/feedback" element={<Feedback token={token} />} />
                 <Route path="/stock/:id" element={<EditStock />} />
                 <Route path="/edit-category/:id" element={<EditCategory />} />
-                <Route path="//edit-sub-category/:id" element={<EditSubCategory />} />
+                <Route path="/edit-sub-category/:id" element={<EditSubCategory />} />
               </Routes>
             </div>
           </div>

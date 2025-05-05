@@ -85,6 +85,21 @@ const PlaceOrder = () => {
                         toast.error(responseStripe.data.message)
                     }
                     break;
+
+                case 'khalti':
+                    console.log("Order Data:", orderData); 
+                    const responseKhalti = await axios.post(backendUrl + '/api/order/khalti', orderData, { 
+                        headers: { Authorization: `Bearer ${token}` } 
+                    });
+    
+                    if (responseKhalti.data.success) {
+                        const { session_url } = responseKhalti.data
+                        window.location.replace(session_url);
+                    } else {
+                        toast.error(responseKhalti.data.message)
+                    }
+                    break;
+                
                 
                 default:
                     break;

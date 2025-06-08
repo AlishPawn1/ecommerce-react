@@ -15,8 +15,10 @@ import SearchBar from './components/SearchBar'
 import { ToastContainer, toast } from 'react-toastify';
 import Test from './pages/Test'
 import Verify from './pages/Verify'
-import WOW from "wow.js";
+import EmailVerify from './pages/EmailVerify'
 import "animate.css";
+import NotFound from './pages/NotFound'
+import ScrollToTop from './components/ScrollToTop'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -26,9 +28,10 @@ const App = () => {
       <Navbar />
       <ToastContainer />
       <SearchBar/>
+      <ScrollToTop />
       <Routes>
         <Route path='/' element={<Home/>}/>
-        <Route path="/verify" element={<Login />} />
+        <Route path='/email-verify' element={<EmailVerify />} />
         <Route path='/collection' element={<Collection/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/contact' element={<Contact/>}/>
@@ -37,7 +40,8 @@ const App = () => {
         <Route path='/login' element={<Login/>}/>
         <Route path="/place-order" element={<PlaceOrder/>}/>
         <Route path="/order" element={<Order/>}/>
-        <Route path="/verify" element={<Verify/>}/>
+        <Route path="/payment-verify" element={<Verify/>}/>
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </div>

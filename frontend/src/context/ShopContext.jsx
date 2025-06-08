@@ -19,7 +19,7 @@ const ShopContextProvider = (props) => {
   const navigate = useNavigate();
 
   // Log backend URL for debugging
-  console.log('Backend URL:', backendUrl);
+  // console.log('Backend URL:', backendUrl);
 
   // Add product to the cart
   const addToCart = async (itemId, size) => {
@@ -143,13 +143,13 @@ const ShopContextProvider = (props) => {
   // Fetch product data from the backend
   const getProductData = async () => {
     try {
-      console.log('Fetching products from:', `${backendUrl}/api/product/list`);
+      // console.log('Fetching products from:', `${backendUrl}/api/product/list`);
       const response = await axios.get(`${backendUrl}/api/product/list`, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      console.log('API Response:', response.data);
+      // console.log('API Response:', response.data);
       if (response.data?.products) {
         setProducts(response.data.products);
       } else {

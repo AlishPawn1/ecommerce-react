@@ -6,8 +6,8 @@ const About = () => {
     <section className="about-section bg-gray-100 py-16">
       <div className="container mx-auto px-4">
         <div className="text-center text-3xl">
-            {/* Title Section */}
-            <Title text1={'About'} text2={'Us'} />
+          {/* Title Section */}
+          <Title text1={'About'} text2={'Us'} />
         </div>
 
         {/* About Content */}

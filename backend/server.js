@@ -8,6 +8,7 @@ import userRouter from './routes/userRoute.js';
 import productRouter from './routes/productRoute.js';
 import cartRouter from './routes/cartRoute.js';
 import orderRouter from './routes/orderRoute.js';
+import contactRouter from './routes/contactRoute.js';
 
 // App config
 const app = express();
@@ -18,7 +19,7 @@ console.log('FRONTEND_URLS:', process.env.FRONTEND_URLS);
 console.log('MONGODB_URL:', process.env.MONGODB_URL);
 
 // Parse and sanitize FRONTEND_URLS (comma-separated list)
-const frontendUrls = (process.env.FRONTEND_URLS || 'http://localhost:5173,http://localhost:5174')
+const frontendUrls = (process.env.FRONTEND_URLS)
   .split(',')
   .map(url => url.trim().replace(/\/+$/, ''));
 console.log('Sanitized FRONTEND_URLS:', frontendUrls);
@@ -54,6 +55,7 @@ app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
+app.use('/api', contactRouter);
 
 app.get('/', (req, res) => {
   res.send('API Working');

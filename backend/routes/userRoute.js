@@ -1,13 +1,17 @@
 import express from 'express';
-import { loginUser, registerUser, adminLogin, verifyEmail, verifyCode, resendCode } from '../controllers/userController.js';
+import { verifyEmail, verifyCode, registerUser, loginUser, resendCode, adminLogin, getAllUsers, deleteUser } from '../controllers/userController.js';
+import multer from 'multer';
 
+const upload = multer({ dest: 'uploads/' });
 const userRouter = express.Router();
 
-userRouter.post('/register', registerUser);
+userRouter.post('/register', upload.single('image'), registerUser);
 userRouter.post('/login', loginUser);
-userRouter.post('/admin', adminLogin);
-userRouter.get('/verify', verifyEmail);
+userRouter.get('/verify-email', verifyEmail);
 userRouter.post('/verify-code', verifyCode);
 userRouter.post('/resend-code', resendCode);
+userRouter.post('/admin', adminLogin);
+userRouter.get('/users', getAllUsers);
+userRouter.delete('/users/:id', deleteUser);
 
 export default userRouter;

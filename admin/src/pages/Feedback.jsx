@@ -9,7 +9,7 @@ const Feedback = () => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const response = await axios.get('/api/contact-messages'); // Replace with your actual API endpoint
+        const response = await axios.get('/api/contact-messages');
         setFeedback(response.data);
         setLoading(false);
       } catch (err) {
@@ -22,13 +22,8 @@ const Feedback = () => {
     fetchFeedback();
   }, []);
 
-  if (loading) {
-    return <div className="text-center">Loading feedback...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center text-danger">{error}</div>;
-  }
+  if (loading) return <div className="text-center">Loading feedback...</div>;
+  if (error) return <div className="text-center text-danger">{error}</div>;
 
   return (
     <section className="feedback-section section-gaps">
@@ -39,24 +34,22 @@ const Feedback = () => {
               <th>S.no</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Subject</th>
               <th>Message</th>
             </tr>
           </thead>
           <tbody>
             {feedback.length > 0 ? (
               feedback.map((item, index) => (
-                <tr key={item.id || index}>
+                <tr key={item._id || index}>
                   <td>{index + 1}</td>
                   <td>{item.name}</td>
                   <td>{item.email}</td>
-                  <td>{item.subject}</td>
                   <td>{item.message}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="5">No feedback available</td>
+                <td colSpan="4">No feedback available</td>
               </tr>
             )}
           </tbody>

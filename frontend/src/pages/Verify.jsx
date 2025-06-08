@@ -3,9 +3,10 @@ import { ShopContext } from '../context/ShopContext';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { backendUrl } from '../App';
 
 const Verify = () => {
-    const { token, setCartItems, backendUrl } = useContext(ShopContext);
+    const { setCartItems } = useContext(ShopContext);
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -14,23 +15,17 @@ const Verify = () => {
 
     const verifyPayment = async () => {
         try {
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-
-            const response = await axios.post(
-                `${backendUrl}/api/order/verifyStripe`,
-                { success, orderId },
-                { headers: { Authorization: `Bearer ${token}` } } // Fixed headers
-            );
+            const response = await axios.post(`${backendUrl}/api/order/verifyStripe`, {
+                success,
+                orderId,
+            });
 
             if (response.data.success) {
                 setCartItems({});
                 toast.success('Payment verified successfully');
                 navigate('/order');
             } else {
-                toast.error('Payment verification failed');
+                toast.error(response.data.message || 'Payment verification failed');
                 navigate('/cart');
             }
         } catch (error) {
@@ -41,8 +36,13 @@ const Verify = () => {
     };
 
     useEffect(() => {
-        verifyPayment();
-    }, [token]);
+        if (orderId) {
+            verifyPayment();
+        } else {
+            // If there's no orderId, redirect to homepage
+            navigate('/');
+        }
+    }, [orderId]);
 
     return (
         <div className="flex justify-center items-center h-screen">

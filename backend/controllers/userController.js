@@ -101,8 +101,11 @@ const registerUser = async (req, res) => {
     const user = await newUser.save();
 
     // Send verification email
-    const verificationLink = `${process.env.FRONTEND_URLS}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
+    const frontendUrls = process.env.FRONTEND_URLS.split(',').map(url => url.trim().replace(/\/+$/, ''));
+    const baseUrl = frontendUrls[0]; // Always use the first URL
+    const verificationLink = `${baseUrl}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
     console.log("Verification Link:", verificationLink);
+
     const emailSubject = 'Verify Your Email Address';
     const emailMessage = `
       <html>
@@ -218,8 +221,12 @@ const resendCode = async (req, res) => {
         user.verificationCode = code;
         user.verificationCodeExpires = Date.now() + 30 * 60 * 1000;
         await user.save();
-        const verificationLink = `${process.env.FRONTEND_URLS}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
+        
+        const frontendUrls = process.env.FRONTEND_URLS.split(',').map(url => url.trim().replace(/\/+$/, ''));
+        const baseUrl = frontendUrls[0]; // Always use the first URL
+        const verificationLink = `${baseUrl}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
         console.log("Resend Verification Link:", verificationLink);
+
         const emailSubject = 'Verify Your Email Address';
         const emailMessage = `
           <html>

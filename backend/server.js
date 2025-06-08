@@ -31,10 +31,15 @@ connectCloudinary();
 // CORS middleware
 app.use(cors({
   origin: (origin, callback) => {
-    console.log('Request Origin:', origin); // Log incoming origin
+    console.log('Request Origin:', origin);
+    console.log('Allowed Origins:', frontendUrls);
+    console.log('Origin Type:', typeof origin);
+    console.log('Is Origin in Allowed List?:', frontendUrls.includes(origin));
     if (frontendUrls.includes(origin) || !origin) {
-      callback(null, origin || frontendUrls[0]); // Return matching origin or default
+      console.log('Allowing Origin:', origin || frontendUrls[0]);
+      callback(null, origin || frontendUrls[0]);
     } else {
+      console.error('CORS rejected origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -42,14 +47,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-app.use(express.json());
 
 // Log all incoming requests
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
   next();
 });
-
+console.log('Raw FRONTEND_URLS from .env:', process.env.FRONTEND_URLS);
 // API endpoints
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);

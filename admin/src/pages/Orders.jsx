@@ -1,51 +1,64 @@
-import React from "react";
-import { useEffect } from "react";
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { backendUrl, currency } from "../App";
 import { toast } from "react-toastify";
-import { assets } from "../assets/assets";
+import { assets } from "../assets/assets"; 
 
 const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
 
   const fetchAllOrders = async () => {
-    if (!token) return null;
+    if (!token) {
+      console.log("No token provided");
+      toast.error("Please log in to view orders");
+      return;
+    }
 
     try {
+      console.log("Fetching orders with token:", token);
       const response = await axios.post(
-        backendUrl + "/api/order/list",
+        `${backendUrl}/api/order/list`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (response.data.success) {
         setOrders(response.data.orders);
+        console.log("Orders fetched:", response.data.orders);
       } else {
-        console.log(response.data.message);
+        console.log("Server error:", response.data.message);
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Fetch Orders Error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
       toast.error(error.response?.data?.message || error.message);
     }
   };
 
   const statusHandler = async (event, orderId) => {
-  try {
-    const response = await axios.post(
-      backendUrl + '/api/order/status',
-      { orderId, status: event.target.value },
-      { headers: { Authorization: `Bearer ${token}` } } 
-    );
-    if (response.data.success) {
-      await fetchAllOrders();
-      toast.success("Order status updated successfully");
+    try {
+      console.log("Updating status for order:", orderId, "to", event.target.value);
+      const response = await axios.post(
+        `${backendUrl}/api/order/status`,
+        { orderId, status: event.target.value },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.data.success) {
+        await fetchAllOrders();
+        toast.success("Order status updated successfully");
+      }
+    } catch (error) {
+      console.error("Status Update Error:", {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      toast.error(error.response?.data?.message || error.message);
     }
-  } catch (error) {
-    console.log(error);
-    toast.error(error.response?.data?.message || error.message);
-  }
-};
+  };
 
   useEffect(() => {
     fetchAllOrders();
@@ -54,12 +67,15 @@ const Orders = ({ token }) => {
   return (
     <div>
       <h3>Order Page</h3>
-      <div className="">
+      <div>
         {orders.map((order, index) => (
-          <div className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700" key={index}>
+          <div
+            className="grid grid-cols-1 sm:grid-cols-[0.5fr_2fr_1fr] lg:grid-cols-[0.5fr_2fr_1fr_1fr_1fr] gap-3 items-start border-2 border-gray-200 p-5 md:p-8 my-3 md:my-4 text-xs sm:text-sm text-gray-700"
+            key={index}
+          >
             <img className="w-12" src={assets.parcel_icon} alt="parcel icon" />
             <div>
-              <div className="">
+              <div>
                 {order.items.map((item, itemIndex) => (
                   <p className="py-0.5" key={itemIndex}>
                     {item.name} x {item.quantity} <span>{item.size}</span>
@@ -67,7 +83,9 @@ const Orders = ({ token }) => {
                   </p>
                 ))}
               </div>
-              <p className="mt-3 mb-2 font-medium">{order.address.firstName + " " + order.address.lastName}</p>
+              <p className="mt-3 mb-2 font-medium">
+                {order.address.firstName + " " + order.address.lastName}
+              </p>
               <div>
                 <p>{order.address.street + ","}</p>
                 <p>
@@ -89,7 +107,11 @@ const Orders = ({ token }) => {
               <p>Date: {new Date(order.date).toLocaleDateString()}</p>
             </div>
             <p className="text-sm sm:text-[15px]">{currency}{order.amount}</p>
-            <select onChange={(event) => statusHandler(event, order._id)} value={order.status} className="p-2 font-semibold">
+            <select
+              onChange={(event) => statusHandler(event, order._id)}
+              value={order.status}
+              className="p-2 font-semibold"
+            >
               <option value="Order Placed">Order Placed</option>
               <option value="Packing">Packing</option>
               <option value="Shipped">Shipped</option>

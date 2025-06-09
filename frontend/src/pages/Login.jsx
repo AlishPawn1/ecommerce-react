@@ -19,7 +19,7 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const [address, setAddress] = useState('');
   const [number, setNumber] = useState('');
-  const [image, setImage] = useState(null); // New state for image file
+  const [image, setImage] = useState(null);
 
   // Handle verification link redirect
   useEffect(() => {
@@ -55,7 +55,6 @@ const Login = () => {
     try {
       let response;
       if (currentState === 'Sign Up') {
-        // Create FormData for multipart/form-data request
         const formData = new FormData();
         formData.append('name', name);
         formData.append('email', email);
@@ -63,15 +62,14 @@ const Login = () => {
         formData.append('number', number);
         formData.append('address', address);
         if (image) {
-          formData.append('image', image); // Add image to FormData
+          formData.append('image', image);
         }
-
+        console.log('Sign Up payload:', Object.fromEntries(formData)); // Debug log
         response = await axios.post(`${backendUrl}/api/user/register`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-
         if (response.data.success) {
           toast.success(response.data.message);
           setShowVerification(true);
@@ -80,6 +78,7 @@ const Login = () => {
           toast.error(response.data.message || 'Registration failed');
         }
       } else if (currentState === 'Verify') {
+        console.log('Verify payload:', { email, code: verificationCode }); // Debug log
         response = await axios.post(`${backendUrl}/api/user/verify-code`, { email, code: verificationCode });
         if (response.data.success) {
           toast.success(response.data.message);
@@ -96,6 +95,7 @@ const Login = () => {
           }
         }
       } else {
+        console.log('Login payload:', { email, password }); // Debug log
         response = await axios.post(`${backendUrl}/api/user/login`, { email, password });
         if (response.data.success) {
           setToken(response.data.token);
@@ -111,12 +111,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      if (error.response?.data?.message === 'Verification code expired') {
-        setCodeExpired(true);
-        toast.error('Verification code expired. Please resend a new code.');
-      } else {
-        toast.error(error.response?.data?.message || 'Something went wrong');
-      }
+      toast.error(error.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -126,10 +121,13 @@ const Login = () => {
     <section className="login-section">
       {loading && <LoadingScreen />}
       <div className="container">
-        <form onSubmit={onSubmitHandler} className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-900">
+        <form
+          onSubmit={onSubmitHandler}
+          className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-900"
+        >
           <div className="inline-flex items-center gap-2 mb-2 mt-10">
             <h1 className="primary-font text-3xl">{currentState === 'Verify' ? 'Verify Email' : currentState}</h1>
-            <hr classNamedavid="border-none h-[1.5px] w-8 bg-gray-800" />
+            <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
           </div>
           {currentState === 'Sign Up' && (
             <>
@@ -158,7 +156,7 @@ const Login = () => {
                 required
               />
               <input
-                onChange={(e) => setImage(e.target.files[0])} // Handle image file
+                onChange={(e) => setImage(e.target.files[0])}
                 type="file"
                 accept="image/*"
                 className="w-full px-3 py-2 border border-gray-800"
@@ -218,7 +216,15 @@ const Login = () => {
                 Login Here
               </p>
             ) : (
-              <p onClick={() => { setCurrentState('Login'); setShowVerification(false); setVerificationCode(''); setCodeExpired(false); }} className="cursor-pointer">
+              <p
+                onClick={() => {
+                  setCurrentState('Login');
+                  setShowVerification(false);
+                  setVerificationCode('');
+                  setCodeExpired(false);
+                }}
+                className="cursor-pointer"
+              >
                 Back to Login
               </p>
             )}

@@ -19,30 +19,34 @@ const generateVerificationCode = () => {
 
 // Route for user login
 const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ success: false, message: "User not found" });
-        }
-        if (!user.isVerified) {
-            return res.status(400).json({ success: false, message: "Please verify your email first" });
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ success: false, message: "Invalid credentials" });
-        }
-        const token = createToken(user._id);
-        res.status(200).json({
-            success: true,
-            token,
-            userId: user._id,
-            userName: user.name,
-        });
-    } catch (error) {
-        console.error("Login error:", error);
-        res.status(500).json({ success: false, message: "Login failed" });
+  try {
+    if (!req.body || !req.body.email || !req.body.password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
+    const { email, password } = req.body;
+    console.log('Received login data:', { email, password }); // Debug log
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'User not found' });
+    }
+    if (!user.isVerified) {
+      return res.status(400).json({ success: false, message: 'Please verify your email first' });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    }
+    const token = createToken(user._id);
+    res.status(200).json({
+      success: true,
+      token,
+      userId: user._id,
+      userName: user.name,
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, message: 'Login failed' });
+  }
 };
 
 // Route for user registration
@@ -64,7 +68,7 @@ const registerUser = async (req, res) => {
     if (!password || password.length < 8) {
       return res.status(400).json({ success: false, message: "Password must be at least 8 characters" });
     }
-    if (address.trim().split(' ').length < 2) {
+    if (address.trim().split(' ').length < 1) {
       return res.status(400).json({ success: false, message: "Address must contain at least 2 words." });
     }
     if (!/^(9[876]\d{8})$/.test(number)) {

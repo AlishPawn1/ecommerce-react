@@ -28,7 +28,9 @@ console.log('Sanitized FRONTEND_URLS:', frontendUrls);
 connectDB();
 connectCloudinary();
 
-// CORS middleware
+// Middleware
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.urlencoded({ extended: true })); // Optional: Parse URL-encoded bodies
 app.use(cors({
   origin: (origin, callback) => {
     console.log('Request Origin:', origin);
@@ -54,6 +56,7 @@ app.use((req, res, next) => {
   next();
 });
 console.log('Raw FRONTEND_URLS from .env:', process.env.FRONTEND_URLS);
+
 // API endpoints
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);

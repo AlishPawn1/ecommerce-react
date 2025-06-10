@@ -18,6 +18,7 @@ import Feedback from "./pages/Feedback";
 import EditStock from "./components/EditStock";
 import EditCategory from "./components/EditCategory";
 import EditSubCategory from "./components/EditSubCategory";
+import EditProduct from './components/EditProduct';
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 export const currency = "Rs.";
@@ -58,6 +59,7 @@ const App = () => {
                 <Route path="/stock/:id" element={<EditStock />} />
                 <Route path="/edit-category/:id" element={<EditCategory />} />
                 <Route path="/edit-sub-category/:id" element={<EditSubCategory />} />
+                <Route path="/edit-product/:id" element={<EditProduct />} />
               </Routes>
             </div>
           </div>

@@ -13,15 +13,16 @@ import {
   checkCategoryExists,
   removeCategory,
   getSingleCategory,
-  updateCategory, 
+  updateCategory,
   checksubCategoryExists,
   removesubCategory,
   getSinglesubCategory,
   updatesubCategory,
+  updateProduct, // Add the new controller
 } from '../controllers/productControllers.js';
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
-import auth from '../middleware/auth.js'; // Added general user auth middleware
+import auth from '../middleware/auth.js';
 
 const productRouter = express.Router();
 
@@ -38,12 +39,25 @@ productRouter.post(
   addProduct
 );
 productRouter.post('/remove', adminAuth, removeProduct);
-productRouter.post('/single', singleProduct); // Removed adminAuth to allow public access
+productRouter.post('/single', singleProduct);
 productRouter.get('/list', listProduct);
 
 // Stock Management
 productRouter.get('/stock/:id', adminAuth, editStockProduct);
 productRouter.put('/stock/:id', adminAuth, updateStock);
+
+// Update Product
+productRouter.put(
+  '/update/:id',
+  adminAuth,
+  upload.fields([
+    { name: 'image1', maxCount: 1 },
+    { name: 'image2', maxCount: 1 },
+    { name: 'image3', maxCount: 1 },
+    { name: 'image4', maxCount: 1 },
+  ]),
+  updateProduct
+);
 
 // Categories
 productRouter.post('/categories', adminAuth, category);

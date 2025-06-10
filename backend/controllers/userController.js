@@ -197,18 +197,26 @@ const verifyCode = async (req, res) => {
 
 // Route for admin login
 const adminLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign({ email, password }, process.env.JWT_SECRET, { expiresIn: "1h" });
-            res.status(200).json({ success: true, token });
-        } else {
-            res.status(400).json({ success: false, message: "Invalid credentials" });
-        }
-    } catch (error) {
-        console.error("Error in adminLogin:", error);
-        res.status(500).json({ success: false, message: error.message });
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password are required.' });
     }
+
+    console.log('Admin login attempt:', { email }); // Debug log
+
+    if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+    }
+
+    const token = jwt.sign({ email, password }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log('Generated token:', token); // Debug log
+
+    res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error('Admin login error:', error.message);
+    res.status(500).json({ success: false, message: 'Server error.' });
+  }
 };
 
 const resendCode = async (req, res) => {

@@ -24,7 +24,6 @@ const productSchema = new mongoose.Schema({
   category: { type: String, required: true },
   subCategory: { type: String, required: true },
   size: [{ type: String }],
-  color: [{ type: String }],
   bestseller: { type: Boolean, default: false },
   stock: { type: Number, required: true, min: 0, default: 0 },
   image: [{ type: String }],

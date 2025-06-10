@@ -5,35 +5,66 @@ import { assets } from '../assets/assets';
 import CartTotal from '../components/CartTotal';
 
 const Cart = () => {
-    const { products, currency, cartItem, updateQuantity, navigate } = useContext(ShopContext);
+    const { products, token, currency, cartItem, updateQuantity, navigate } = useContext(ShopContext);
     const [cartData, setCartData] = useState([]);
 
     useEffect(() => {
-        // console.log("Cart Items:", cartItem);
-        // console.log("Products:", products);
-
         const tempData = [];
         for (const items in cartItem) {
             if (items === "undefined") continue; // Skip invalid entries
             for (const item in cartItem[items]) {
                 if (cartItem[items][item] > 0) {
                     tempData.push({
-                        _id: items, // Ensure this is the correct product ID
+                        _id: items,
                         size: item,
                         quantity: cartItem[items][item],
                     });
                 }
             }
         }
-        // console.log("Cart Data:", tempData);
         setCartData(tempData);
     }, [cartItem, products]);
 
-    if (!products || products.length === 0) {
-        console.warn("⚠️ Products data is empty.");
-        return <p className="text-center py-10 text-gray-500">Loading cart items...</p>;
+    // If token is not set, show a login prompt
+    if (!token) {
+        return (
+            <section className="cart-section">
+                <div className="container">
+                    <div className="text-2xl mb-3">
+                        <Title text1="Your" text2="Cart" />
+                    </div>
+                    <p className="text-center text-gray-500 mt-4">
+                        Please log in to view your cart.
+                    </p>
+                    <div className="w-full text-center mt-4">
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="btn-black"
+                        >
+                            Log In
+                        </button>
+                    </div>
+                </div>
+            </section>
+        );
     }
 
+    // If products are not loaded, show loading message
+    if (!products || products.length === 0) {
+        console.warn("⚠️ Products data is empty.");
+        return (
+            <section className="cart-section">
+                <div className="container">
+                    <div className="text-2xl mb-3">
+                        <Title text1="Your" text2="Cart" />
+                    </div>
+                    <p className="text-center py-10 text-gray-500">Loading cart items...</p>
+                </div>
+            </section>
+        );
+    }
+
+    // Render the cart if token and products are available
     return (
         <section className="cart-section">
             <div className="container">
@@ -44,19 +75,18 @@ const Cart = () => {
                 <div>
                     {cartData.length > 0 ? (
                         cartData.map((item) => {
-                            // Use item._id to find the product
                             const productData = products.find(
-                                (product) => product._id === item._id // Ensure data types match
+                                (product) => product._id === item._id
                             );
 
                             if (!productData) {
                                 console.warn(`⚠️ Product not found for ID: ${item._id}`);
-                                return null; // Skip rendering this item
+                                return null;
                             }
 
                             return (
                                 <div
-                                    key={`${item._id}-${item.size}`} // Use item._id for the key
+                                    key={`${item._id}-${item.size}`}
                                     className="py-4 border-t border-b text-gray-700 grid grid-cols-[4fr_0.5fr_0.5fr] sm:grid-cols-[4fr_2fr_0.5fr] items-center gap-4"
                                 >
                                     <div className="flex items-center gap-6">
@@ -82,7 +112,7 @@ const Cart = () => {
                                         onChange={(e) => {
                                             const value = e.target.value.trim();
                                             if (value && Number(value) > 0) {
-                                                updateQuantity(item._id, item.size, Number(value)); // Use item._id
+                                                updateQuantity(item._id, item.size, Number(value));
                                             }
                                         }}
                                         type="number"
@@ -93,7 +123,7 @@ const Cart = () => {
                                     />
 
                                     <img
-                                        onClick={() => updateQuantity(item._id, item.size, 0)} // Use item._id
+                                        onClick={() => updateQuantity(item._id, item.size, 0)}
                                         className="w-4 mr-4 sm:w-5 cursor-pointer"
                                         src={assets.removeIcon}
                                         alt="Remove Item"
@@ -110,7 +140,7 @@ const Cart = () => {
                             <CartTotal />
                             <div className="w-full text-end">
                                 <button onClick={() => navigate('/place-order')} className="btn-black">
-                                    proceed to checkout
+                                    Proceed to Checkout
                                 </button>
                             </div>
                         </div>

@@ -24,7 +24,7 @@ const productSchema = new mongoose.Schema({
   additionalDescription: { type: String, required: false },
   stockHistory: [stockHistorySchema],
   stockUpdatedAt: { type: Date },
-  date: { type: Date, default: Date.now }
+  date: { type: Date, default: Date.now } 
 }, { timestamps: true });
 
 // Middleware to track stock changes

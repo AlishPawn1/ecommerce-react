@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { backendUrl } from '../App';
 
 const History = () => {
   const [orders, setOrders] = useState([]);
@@ -11,20 +12,35 @@ const History = () => {
   const fetchOrders = async (days) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/orders?days=${days}`);
-      setOrders(response.data);
+      const response = await axios.get(`${backendUrl}/api/order?days=${days}`);
+      setOrders(response.data.orders);
       setLoading(false);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch order history');
+      console.error('Error fetching orders:', {
+        message: err.message,
+        response: err.response ? {
+          status: err.response.status,
+          data: err.response.data,
+        } : null,
+        request: err.request ? 'Request made but no response received' : null,
+      });
+      let errorMessage = 'Failed to fetch order history';
+      if (err.response) {
+        errorMessage += `: ${err.response.status} - ${err.response.data.message || 'Server error'}`;
+      } else if (err.request) {
+        errorMessage += ': Unable to connect to the server. Please check if the backend is running.';
+      } else {
+        errorMessage += `: ${err.message}`;
+      }
+      setError(errorMessage);
       setLoading(false);
-      console.error('Error fetching orders:', err);
     }
   };
 
   useEffect(() => {
     fetchOrders(selectedDays);
-  }, [filterApplied]);
+  }, [filterApplied, selectedDays]); // Added selectedDays to dependencies
 
   const handleFilterSubmit = (e) => {
     e.preventDefault();
@@ -63,12 +79,12 @@ const History = () => {
 
       <section className="filter-form py-3">
         <div className="container">
-          <form onSubmit={handleFilterSubmit} className="d-flex gap-2 align-items-center">
-            <label htmlFor="days">Select Date Range:</label>
+          <form onSubmit={handleFilterSubmit} className="d-flex gap-2 w-150 align-items-center">
+            <label htmlFor="days" className='w-50 flex-[50%]'>Select Date Range:</label>
             <select
               name="days"
               id="days"
-              className="form-control w-25"
+              className="form-control"
               value={selectedDays}
               onChange={(e) => setSelectedDays(Number(e.target.value))}
             >
@@ -77,7 +93,7 @@ const History = () => {
               <option value="90">Last 3 Months</option>
               <option value="365">Last 1 Year</option>
             </select>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn btn-blue">
               Filter
             </button>
           </form>
@@ -109,7 +125,7 @@ const History = () => {
                     <td>{order.order_id}</td>
                     <td>{order.user_name}</td>
                     <td>{order.product_name}</td>
-                    <td>{order.amount_due}</td>
+                    <td>Rs. {order.amount_due.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                     <td>{order.invoice_number}</td>
                     <td>{order.total_products}</td>
                     <td>{new Date(order.order_date).toLocaleString()}</td>

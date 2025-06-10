@@ -14,7 +14,6 @@ import History from "./pages/History";
 import InsertCategory from "./pages/InsertCategory";
 import InsertSubCategory from "./pages/InsertSubCategory";
 import ListUser from "./pages/ListUser";
-import ListReport from "./pages/ListReport";
 import Feedback from "./pages/Feedback";
 import EditStock from "./components/EditStock";
 import EditCategory from "./components/EditCategory";
@@ -55,7 +54,6 @@ const App = () => {
                 <Route path="/insertCategory" element={<InsertCategory token={token} />} />
                 <Route path="/insertSubCategory" element={<InsertSubCategory token={token} />} />
                 <Route path="/listUser" element={<ListUser token={token} />} />
-                <Route path="/listReport" element={<ListReport token={token} />} />
                 <Route path="/feedback" element={<Feedback token={token} />} />
                 <Route path="/stock/:id" element={<EditStock />} />
                 <Route path="/edit-category/:id" element={<EditCategory />} />

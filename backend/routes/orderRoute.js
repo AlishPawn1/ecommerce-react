@@ -11,6 +11,8 @@ import {
   allOrders,
   userOrder,
   updateStatus,
+  updatePaymentStatus,
+  getOrdersByDays,
 } from "../controllers/orderController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
@@ -34,6 +36,10 @@ orderRouter.get("/verifyEsewa", verifyEsewa);
 
 // User features
 orderRouter.post("/userorders", authUser, userOrder);
+
+orderRouter.post("/payment-status", updatePaymentStatus);
+
+orderRouter.get('/', getOrdersByDays);
 
 orderRouter.get('/test-khalti', async (req, res) => {
   try {

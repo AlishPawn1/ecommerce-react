@@ -27,12 +27,17 @@ const Product = () => {
 
   // Handle Add to Cart action
   const handleAddToCart = () => {
+    if (productData?.stock <= 0) {
+      toast.error("This product is out of stock.");
+      return;
+    }
     if (!size) {
       toast.error("Please select a size before adding to the cart.");
       return;
     }
-    console.log("Adding to cart - productId:", productData?._id, "size:", size); // Debugging
-    addToCart(productData?._id, size); // Use productData?._id
+    console.log("Adding to cart - productId:", productData?._id, "size:", size);
+    addToCart(productData?._id, size);
+    toast.success("Product added to cart!");
   };
 
   return productData ? (
@@ -53,18 +58,24 @@ const Product = () => {
                   />
                 ))}
               </div>
-              <div className="flex-1 flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center relative">
                 <img
                   src={image}
                   className="max-w-full max-h-[400px] object-contain"
                   alt="Selected Product"
                 />
+                {/* Out of Stock Badge */}
+                {productData?.stock <= 0 && (
+                  <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
+                    Out of Stock
+                  </span>
+                )}
               </div>
             </div>
 
             {/* Product Details */}
             <div className="flex-1">
-              <h1 className="text-2xl font-medium ">
+              <h1 className="text-2xl font-medium">
                 {productData?.name || "Unknown Product"}
               </h1>
               <p className="text-xl font-semibold mt-4">
@@ -86,7 +97,8 @@ const Product = () => {
                         onClick={() => setSize(item)}
                         className={`border p-2 bg-gray-100 ${
                           item === size ? "border-orange-500" : ""
-                        }`}
+                        } ${productData?.stock <= 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                        disabled={productData?.stock <= 0}
                       >
                         {item}
                       </button>
@@ -99,14 +111,14 @@ const Product = () => {
               <button
                 onClick={handleAddToCart}
                 className={`bg-black text-white px-8 py-3 text-sm uppercase active:bg-gray-700 ${
-                  !size ? "cursor-no-drop opacity-50" : "cursor-pointer"
+                  productData?.stock <= 0 || !size ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                 }`}
-                disabled={!size}
+                disabled={productData?.stock <= 0 || !size}
               >
-                Add to cart
+                {productData?.stock <= 0 ? "Out of Stock" : "Add to Cart"}
               </button>
 
-              <hr className="mt-8 sm:w-4/5 " />
+              <hr className="mt-8 sm:w-4/5" />
 
               {/* Product Info */}
               <div className="text-sm text-gray-500 mt-5 flex flex-col gap-1">

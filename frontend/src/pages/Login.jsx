@@ -11,7 +11,7 @@ const Login = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [codeExpired, setCodeExpired] = useState(false);
-  const { setToken, navigate, backendUrl, setUserName } = useContext(ShopContext);
+  const { setToken, setUser, navigate, backendUrl } = useContext(ShopContext);
 
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,6 @@ const Login = () => {
   const [number, setNumber] = useState('');
   const [image, setImage] = useState(null);
 
-  // Handle verification link redirect
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
       toast.success('Email verified successfully! Please log in.');
@@ -64,7 +63,7 @@ const Login = () => {
         if (image) {
           formData.append('image', image);
         }
-        console.log('Sign Up payload:', Object.fromEntries(formData)); // Debug log
+        console.log('Sign Up payload:', Object.fromEntries(formData));
         response = await axios.post(`${backendUrl}/api/user/register`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -78,7 +77,7 @@ const Login = () => {
           toast.error(response.data.message || 'Registration failed');
         }
       } else if (currentState === 'Verify') {
-        console.log('Verify payload:', { email, code: verificationCode }); // Debug log
+        console.log('Verify payload:', { email, code: verificationCode });
         response = await axios.post(`${backendUrl}/api/user/verify-code`, { email, code: verificationCode });
         if (response.data.success) {
           toast.success(response.data.message);
@@ -95,14 +94,16 @@ const Login = () => {
           }
         }
       } else {
-        console.log('Login payload:', { email, password }); // Debug log
+        console.log('Login payload:', { email, password });
         response = await axios.post(`${backendUrl}/api/user/login`, { email, password });
         if (response.data.success) {
-          setToken(response.data.token);
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('userId', response.data.userId);
-          localStorage.setItem('userName', response.data.userName);
-          setUserName(response.data.userName);
+          const { token, userId, userName } = response.data;
+          console.log('Full login response:', response.data); // Debug log
+          localStorage.setItem('token', token);
+          localStorage.setItem('userId', userId);
+          localStorage.setItem('name', userName); // Consistent key 'name'
+          setToken(token);
+          setUser({ userId, name: userName }); // Use 'name' in user object
           toast.success('Login successful!');
           navigate('/');
         } else {
@@ -152,7 +153,7 @@ const Login = () => {
                 value={number}
                 type="text"
                 className="w-full px-3 py-2 border border-gray-800"
-                placeholder="Phone Number (e.g. 98xxxxxxx)"
+                placeholder="Phone Number (e.g., 98xxxxxxx)"
                 required
               />
               <input
@@ -160,7 +161,6 @@ const Login = () => {
                 type="file"
                 accept="image/*"
                 className="w-full px-3 py-2 border border-gray-800"
-                placeholder="Profile Image"
               />
             </>
           )}

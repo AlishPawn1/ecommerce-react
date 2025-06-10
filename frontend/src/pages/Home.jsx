@@ -6,16 +6,20 @@ import OurPolicy from '../components/OurPolicy'
 import NewlettterBox from '../components/NewlettterBox'
 import BannerSlider from '../components/BannerSlider'
 import DealSection from '../components/DealSection'
+import TopProducts from '../components/TopProducts'
+import TopRated from '../components/TopRated'
 
 const Home = () => {
     return (
         <main>
             <BannerSlider/>
             <OurPolicy/>
+            <TopRated />
             <DealSection/>
             <LatestCollection/>
             <Hero/>
             <BestSeller/>
+            <TopProducts/>
             <NewlettterBox/>
         </main>
     )

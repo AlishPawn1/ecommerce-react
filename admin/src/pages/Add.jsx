@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Added useEffect
+import React, { useState, useEffect } from "react";
 import { assets } from "../assets/assets";
 import { backendUrl } from "../App";
 import axios from "axios";
@@ -9,15 +9,16 @@ const Add = ({ token }) => {
     const [selectedSizes, setSelectedSizes] = useState([]);
     const [productName, setProductName] = useState("");
     const [productDescription, setProductDescription] = useState("");
-    const [productCategory, setProductCategory] = useState(""); // Changed default to empty
-    const [subCategory, setSubCategory] = useState(""); // Changed default to empty
+    const [additionalDescription, setAdditionalDescription] = useState("");
+    const [productCategory, setProductCategory] = useState("");
+    const [subCategory, setSubCategory] = useState("");
     const [productPrice, setProductPrice] = useState("");
     const [stock, setStock] = useState("");
     const [isBestseller, setIsBestseller] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const [categories, setCategories] = useState([]); // Added state for categories
-    const [subCategories, setSubCategories] = useState([]); // Added state for subcategories
+    const [categories, setCategories] = useState([]);
+    const [subCategories, setSubCategories] = useState([]);
 
     // Fetch categories from database
     const fetchCategories = async () => {
@@ -28,7 +29,7 @@ const Add = ({ token }) => {
                 ? response.data
                 : response.data.data || [];
             setCategories(data);
-            if (data.length > 0) setProductCategory(data[0]._id); // Set first category as default
+            if (data.length > 0) setProductCategory(data[0]._id);
             setError(null);
         } catch (err) {
             setError('Failed to fetch categories');
@@ -48,7 +49,7 @@ const Add = ({ token }) => {
                 ? response.data
                 : response.data.data || [];
             setSubCategories(data);
-            if (data.length > 0) setSubCategory(data[0]._id); // Set first subcategory as default
+            if (data.length > 0) setSubCategory(data[0]._id);
             setError(null);
         } catch (err) {
             setError('Failed to fetch subcategories');
@@ -59,7 +60,6 @@ const Add = ({ token }) => {
         }
     };
 
-    // Fetch data on component mount
     useEffect(() => {
         fetchCategories();
         fetchSubCategories();
@@ -95,8 +95,9 @@ const Add = ({ token }) => {
             const formData = new FormData();
             formData.append("name", productName);
             formData.append("description", productDescription);
-            formData.append("category", productCategory); // Use _id from database
-            formData.append("subCategory", subCategory); // Use _id from database
+            formData.append("additionalDescription", additionalDescription);
+            formData.append("category", productCategory);
+            formData.append("subCategory", subCategory);
             formData.append("price", productPrice);
             formData.append("size", JSON.stringify(selectedSizes));
             formData.append("bestseller", isBestseller);
@@ -116,6 +117,7 @@ const Add = ({ token }) => {
                 toast.success(response.data.message);
                 setProductName("");
                 setProductDescription("");
+                setAdditionalDescription("");
                 setProductCategory(categories.length > 0 ? categories[0]._id : "");
                 setSubCategory(subCategories.length > 0 ? subCategories[0]._id : "");
                 setProductPrice("");
@@ -138,7 +140,6 @@ const Add = ({ token }) => {
         <form onSubmit={onSubmitHandler} className="flex flex-col w-full items-start gap-4 p-4 bg-white">
             {error && <p className="text-red-500">{error}</p>}
 
-            {/* Loading Overlay */}
             {loading && (
                 <div className="fixed inset-0 bg-black opacity-80 flex items-center justify-center z-50">
                     <div className="text-white text-lg font-semibold">Loading...</div>
@@ -179,6 +180,16 @@ const Add = ({ token }) => {
                     placeholder="Write product description"
                     value={productDescription}
                     onChange={(e) => setProductDescription(e.target.value)}
+                ></textarea>
+            </div>
+
+            <div className="w-full">
+                <p className="mb-2 font-semibold">Additional Description</p>
+                <textarea
+                    className="w-full max-w-lg px-3 py-2 border rounded-lg"
+                    placeholder="Write additional description (optional)"
+                    value={additionalDescription}
+                    onChange={(e) => setAdditionalDescription(e.target.value)}
                 ></textarea>
             </div>
 

@@ -21,9 +21,11 @@ import {
 } from '../controllers/productControllers.js';
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
+import auth from '../middleware/auth.js'; // Added general user auth middleware
 
 const productRouter = express.Router();
 
+// Product Management
 productRouter.post(
   '/add',
   adminAuth,
@@ -36,16 +38,16 @@ productRouter.post(
   addProduct
 );
 productRouter.post('/remove', adminAuth, removeProduct);
-productRouter.post('/single', adminAuth, singleProduct);
+productRouter.post('/single', singleProduct); // Removed adminAuth to allow public access
 productRouter.get('/list', listProduct);
 
-// Stock management routes
-productRouter.get('/stock/:id', editStockProduct);
-productRouter.put('/stock/:id', updateStock);
+// Stock Management
+productRouter.get('/stock/:id', adminAuth, editStockProduct);
+productRouter.put('/stock/:id', adminAuth, updateStock);
 
 // Categories
-productRouter.post('/categories', category);
-productRouter.post('/subcategories', subcategory);
+productRouter.post('/categories', adminAuth, category);
+productRouter.post('/subcategories', adminAuth, subcategory);
 productRouter.get('/categories', getCategories);
 productRouter.get('/subcategories', getSubCategories);
 productRouter.get('/categories/check', checkCategoryExists);
@@ -57,5 +59,35 @@ productRouter.get('/subcategories/check', checksubCategoryExists);
 productRouter.delete('/subcategories/:id', adminAuth, removesubCategory);
 productRouter.get('/subcategories/:id', getSinglesubCategory);
 productRouter.put('/subcategories/:id', adminAuth, updatesubCategory);
+
+// Reviews
+productRouter.post('/reviews/:id', auth, async (req, res) => {
+  try {
+    const { addReview } = await import('../controllers/productControllers.js');
+    await addReview(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// View Count
+productRouter.post('/view/:id', async (req, res) => {
+  try {
+    const { incrementViewCount } = await import('../controllers/productControllers.js');
+    await incrementViewCount(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Top Products
+productRouter.get('/top', async (req, res) => {
+  try {
+    const { getTopProducts } = await import('../controllers/productControllers.js');
+    await getTopProducts(req, res);
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 export default productRouter;

@@ -1,4 +1,3 @@
-// productModel.js
 import mongoose from 'mongoose';
 
 const stockHistorySchema = new mongoose.Schema({
@@ -8,6 +7,14 @@ const stockHistorySchema = new mongoose.Schema({
   changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   date: { type: Date, default: Date.now },
   reason: { type: String }
+});
+
+const reviewSchema = new mongoose.Schema({
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  comment: { type: String, required: true, trim: true },
+  date: { type: Date, default: Date.now }
 });
 
 const productSchema = new mongoose.Schema({
@@ -23,8 +30,12 @@ const productSchema = new mongoose.Schema({
   image: [{ type: String }],
   additionalDescription: { type: String, required: false },
   stockHistory: [stockHistorySchema],
+  reviews: [reviewSchema],
+  viewCount: { type: Number, default: 0 },
+  averageRating: { type: Number, default: 0 },
+  reviewCount: { type: Number, default: 0 },
   stockUpdatedAt: { type: Date },
-  date: { type: Date, default: Date.now } 
+  date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 // Middleware to track stock changes
@@ -33,17 +44,29 @@ productSchema.pre('save', function(next) {
     if (!this.stockHistory) this.stockHistory = [];
     
     const previousStock = this.stockHistory.length > 0 
-      ? this.stockHistory[0].newStock 
-      : this.stock;
+      ? this.stockHistory[this.stockHistory.length - 1].newStock 
+      : 0;
     
-    this.stockHistory.unshift({
+    this.stockHistory.push({
       quantity: this.stock - previousStock,
       previousStock,
       newStock: this.stock,
-      changedBy: this._updatedBy // You need to set this before saving
+      changedBy: this._updatedBy,
+      date: Date.now()
     });
     
     this.stockUpdatedAt = Date.now();
+  }
+  next();
+});
+
+// Middleware to update averageRating and reviewCount
+productSchema.pre('save', function(next) {
+  if (this.isModified('reviews')) {
+    this.reviewCount = this.reviews.length;
+    this.averageRating = this.reviews.length > 0 
+      ? this.reviews.reduce((sum, review) => sum + review.rating, 0) / this.reviews.length 
+      : 0;
   }
   next();
 });

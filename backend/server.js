@@ -10,36 +10,45 @@ import orderRouter from './routes/orderRoute.js';
 import contactRouter from './routes/contactRoute.js';
 import dashboardRouter from './routes/dashboardRoute.js';
 
-// App config
 const app = express();
 
-// Log environment variables for debugging
+// Log all environment variables (optional for debugging)
+console.log('All process.env:', process.env);
 console.log('FRONTEND_URLS:', process.env.FRONTEND_URLS);
 console.log('MONGODB_URL:', process.env.MONGODB_URL);
 
-// Parse and sanitize FRONTEND_URLS (comma-separated list)
+// Parse comma-separated FRONTEND_URLS and clean them
 const frontendUrls = (process.env.FRONTEND_URLS || '')
   .split(',')
   .map(url => url.trim().replace(/\/+$/, ''))
-  .filter(url => url); // Remove empty strings
+  .filter(url => url);
+
 console.log('Sanitized FRONTEND_URLS:', frontendUrls);
 
-// Connect to MongoDB and Cloudinary
-connectDB();
-connectCloudinary();
+// Connect to DB and Cloudinary
+(async () => {
+  try {
+    await connectDB();
+    await connectCloudinary();
+    console.log('✅ Services initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize services:', error.message, error.stack);
+    process.exit(1);
+  }
+})();
 
 // Middleware
-app.use(express.json()); // Parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use(cors({
   origin: (origin, callback) => {
     console.log('Request Origin:', origin);
-    console.log('Allowed Origins:', frontendUrls);
-    if (frontendUrls.includes(origin) || !origin) {
-      console.log('Allowing Origin:', origin || frontendUrls[0] || true);
-      callback(null, origin || frontendUrls[0] || true);
+    if (!origin || frontendUrls.includes(origin)) {
+      console.log('✅ Allowing Origin:', origin || 'server-side/no-origin');
+      callback(null, origin || true); // true means allow any if no origin
     } else {
-      console.error('CORS rejected origin:', origin);
+      console.error('❌ CORS rejected origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -48,13 +57,13 @@ app.use(cors({
   credentials: true,
 }));
 
-// Log all incoming requests
+// Log all requests
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
   next();
 });
 
-// API endpoints
+// Routes
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
@@ -62,6 +71,12 @@ app.use('/api/order', orderRouter);
 app.use('/api', contactRouter);
 app.use('/api/dashboard', dashboardRouter);
 
+// Root route for server check
+app.get('/', (req, res) => {
+  res.status(200).send('Server is running!');
+});
+
+// API health route
 app.get('/api', (req, res) => {
   res.status(200).json({ message: 'API Working' });
 });

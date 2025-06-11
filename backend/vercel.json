@@ -1,4 +1,4 @@
-{
+  {
     "version": 2,
     "builds": [
         {
@@ -6,22 +6,15 @@
             "use": "@vercel/node",
             "config": {
                 "includeFiles": [
-                    "**/*.js",
-                    "**/*.json",
-                    ".env",
-                    "!node_modules/**"
+                    "dist/**"
                 ]
             }
         }
     ],
     "routes": [
         {
-            "src": "/api/(.*)",
-            "dest": "server.js",
-            "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+            "src": "/(.*)",
+            "dest": "server.js"
         }
-    ],
-    "env": {
-        "NODE_ENV": "production"
-    }
+    ]
 }

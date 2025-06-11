@@ -1,4 +1,4 @@
-import 'dotenv/config'; // Load environment variables
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/mongodb.js';
@@ -12,43 +12,22 @@ import dashboardRouter from './routes/dashboardRoute.js';
 
 const app = express();
 
-// Log all environment variables (optional for debugging)
-console.log('All process.env:', process.env);
-console.log('FRONTEND_URLS:', process.env.FRONTEND_URLS);
-console.log('MONGODB_URL:', process.env.MONGODB_URL);
-
-// Parse comma-separated FRONTEND_URLS and clean them
-const frontendUrls = (process.env.FRONTEND_URLS || '')
-  .split(',')
-  .map(url => url.trim().replace(/\/+$/, ''))
-  .filter(url => url);
-
-console.log('Sanitized FRONTEND_URLS:', frontendUrls);
-
-// Connect to DB and Cloudinary
-(async () => {
-  try {
-    await connectDB();
-    await connectCloudinary();
-    console.log('✅ Services initialized successfully');
-  } catch (error) {
-    console.error('❌ Failed to initialize services:', error.message, error.stack);
-    process.exit(1);
-  }
-})();
-
-// Middleware
+// Middleware to parse JSON and urlencoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Parse and sanitize frontend URLs
+const frontendUrls = (process.env.FRONTEND_URLS || '')
+  .split(',')
+  .map(url => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+// CORS config
 app.use(cors({
   origin: (origin, callback) => {
-    console.log('Request Origin:', origin);
     if (!origin || frontendUrls.includes(origin)) {
-      console.log('✅ Allowing Origin:', origin || 'server-side/no-origin');
-      callback(null, origin || true); // true means allow any if no origin
+      callback(null, origin || true);
     } else {
-      console.error('❌ CORS rejected origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -71,15 +50,8 @@ app.use('/api/order', orderRouter);
 app.use('/api', contactRouter);
 app.use('/api/dashboard', dashboardRouter);
 
-// Root route for server check
-app.get('/', (req, res) => {
-  res.status(200).send('Server is running!');
-});
-
-// API health route
-app.get('/api', (req, res) => {
-  res.status(200).json({ message: 'API Working' });
-});
+app.get('/', (req, res) => res.status(200).send('Server is running!'));
+app.get('/api', (req, res) => res.status(200).json({ message: 'API Working' }));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -87,5 +59,23 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Server error' });
 });
 
-// Export for Vercel
-module.exports = app;
+// Async service initialization outside handler, to avoid cold-start delays
+let initialized = false;
+async function initializeServices() {
+  if (initialized) return;
+  try {
+    await connectDB();
+    await connectCloudinary();
+    console.log('✅ Services initialized successfully');
+    initialized = true;
+  } catch (error) {
+    console.error('❌ Failed to initialize services:', error);
+    // You can decide how to handle this on Vercel
+  }
+}
+
+// Vercel serverless function entrypoint
+export default async function handler(req, res) {
+  if (!initialized) await initializeServices();
+  app(req, res);
+}

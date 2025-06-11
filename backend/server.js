@@ -1,7 +1,6 @@
 import 'dotenv/config'; // Load environment variables
 import express from 'express';
 import cors from 'cors';
-import { connect } from 'mongoose';
 import connectDB from './config/mongodb.js';
 import connectCloudinary from './config/cloudinary.js';
 import userRouter from './routes/userRoute.js';
@@ -13,16 +12,16 @@ import dashboardRouter from './routes/dashboardRoute.js';
 
 // App config
 const app = express();
-const port = process.env.PORT || 4000;
 
 // Log environment variables for debugging
 console.log('FRONTEND_URLS:', process.env.FRONTEND_URLS);
 console.log('MONGODB_URL:', process.env.MONGODB_URL);
 
 // Parse and sanitize FRONTEND_URLS (comma-separated list)
-const frontendUrls = (process.env.FRONTEND_URLS)
+const frontendUrls = (process.env.FRONTEND_URLS || '')
   .split(',')
-  .map(url => url.trim().replace(/\/+$/, ''));
+  .map(url => url.trim().replace(/\/+$/, ''))
+  .filter(url => url); // Remove empty strings
 console.log('Sanitized FRONTEND_URLS:', frontendUrls);
 
 // Connect to MongoDB and Cloudinary
@@ -31,16 +30,14 @@ connectCloudinary();
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // Optional: Parse URL-encoded bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(cors({
   origin: (origin, callback) => {
     console.log('Request Origin:', origin);
     console.log('Allowed Origins:', frontendUrls);
-    console.log('Origin Type:', typeof origin);
-    console.log('Is Origin in Allowed List?:', frontendUrls.includes(origin));
     if (frontendUrls.includes(origin) || !origin) {
-      console.log('Allowing Origin:', origin || frontendUrls[0]);
-      callback(null, origin || frontendUrls[0]);
+      console.log('Allowing Origin:', origin || frontendUrls[0] || true);
+      callback(null, origin || frontendUrls[0] || true);
     } else {
       console.error('CORS rejected origin:', origin);
       callback(new Error('Not allowed by CORS'));
@@ -56,7 +53,6 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
   next();
 });
-console.log('Raw FRONTEND_URLS from .env:', process.env.FRONTEND_URLS);
 
 // API endpoints
 app.use('/api/user', userRouter);
@@ -66,14 +62,15 @@ app.use('/api/order', orderRouter);
 app.use('/api', contactRouter);
 app.use('/api/dashboard', dashboardRouter);
 
-app.get('/', (req, res) => {
-  res.send('API Working');
+app.get('/api', (req, res) => {
+  res.status(200).json({ message: 'API Working' });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server Error:', err.message);
+  console.error('Server Error:', err.stack);
   res.status(500).json({ success: false, message: 'Server error' });
 });
 
-app.listen(port, () => console.log(`Server started on PORT: ${port}`));
+// Export for Vercel
+module.exports = app;

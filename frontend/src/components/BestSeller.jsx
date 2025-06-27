@@ -18,7 +18,7 @@ const BestSeller = () => {
         <section className='best-seller-section my-10'>
             <div className='container'>
                 <div className='text-center py-8 text-3xl'>
-                    <Title text1={'Best'} text2={'Seller'} text3={'This is random text that content random text'} />
+                    <Title text1={'Best'} text2={'Seller'} text3={'Shop our most popular products—loved by customers and trusted for their quality and value.'} />
                 </div>
 
                 <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6'>

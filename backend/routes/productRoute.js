@@ -23,6 +23,8 @@ import {
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 import auth from '../middleware/auth.js';
+import productModel from '../models/productModel.js';
+import authUser from '../middleware/auth.js';
 
 const productRouter = express.Router();
 
@@ -101,6 +103,25 @@ productRouter.get('/top', async (req, res) => {
     await getTopProducts(req, res);
   } catch (error) {
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// Example: GET /api/product/my-reviews/count
+productRouter.get('/my-reviews/count', authUser, async (req, res) => {
+  try {
+    const userId = req.user._id.toString(); // ✅ Convert to string for comparison
+
+    const products = await productModel.find({ 'reviews.user': userId });
+
+    let totalReviews = 0;
+    products.forEach(product => {
+      totalReviews += product.reviews.filter(r => r.user.toString() === userId).length;
+    });
+
+    res.json({ success: true, totalReviews });
+  } catch (error) {
+    console.error('Error counting reviews:', error);
+    res.status(500).json({ success: false, message: 'Failed to count reviews' });
   }
 });
 

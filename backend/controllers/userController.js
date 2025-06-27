@@ -44,7 +44,6 @@ const registerUser = async (req, res) => {
 
     // Handle image upload to Cloudinary if provided
     if (req.file) {
-      // Convert buffer to base64 for Cloudinary upload
       const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
       const result = await cloudinary.uploader.upload(base64Image, {
         folder: 'users',
@@ -111,6 +110,25 @@ const registerUser = async (req, res) => {
   } catch (error) {
     console.error('Error in registerUser:', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Route to get authenticated user's profile
+const getUserProfile = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById(decoded.id, 'name email number address image isVerified');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };
 
@@ -290,4 +308,4 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, verifyEmail, verifyCode, resendCode, adminLogin, getAllUsers, deleteUser };
+export { registerUser, loginUser, verifyEmail, verifyCode, resendCode, adminLogin, getAllUsers, deleteUser, getUserProfile };

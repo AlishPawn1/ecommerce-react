@@ -29,6 +29,8 @@ import sectionbg1 from './section-bg-1.jpg'
 import sectionbg2 from './section-bg-2.jpg'
 import sectionbg3 from './section-bg-3.jpg'
 import sectionbg4 from './section-bg-4.jpg'
+import fallback_image from './fallback-profile-image.jpg'
+import about_img from './about-img.jpg'
 
 
 
@@ -64,4 +66,6 @@ export const assets = {
   sectionbg2,
   sectionbg3,
   sectionbg4,
+  fallback_image,
+  about_img
 };

@@ -19,6 +19,9 @@ import EmailVerify from './pages/EmailVerify'
 import "animate.css";
 import NotFound from './pages/NotFound'
 import ScrollToTop from './components/ScrollToTop'
+import ProfileCard from './pages/ProfileCard'
+import ChatBot from './components/ChatBot'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -41,8 +44,11 @@ const App = () => {
         <Route path="/place-order" element={<PlaceOrder/>}/>
         <Route path="/order" element={<Order/>}/>
         <Route path="/payment-verify" element={<Verify/>}/>
+        <Route path='/profile' element={<ProfileCard />}/>
+        <Route path='/privacy-policy' element={<PrivacyPolicy />}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <ChatBot/>
       <Footer />
     </div>
   )

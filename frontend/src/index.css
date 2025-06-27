@@ -306,7 +306,6 @@ header {
     opacity: 0;
     visibility: hidden;
 }
-
 .splide__slide.is-active .slide-animation > * {
     opacity: 1;
     visibility: visible;
@@ -508,4 +507,8 @@ header {
     stroke-dasharray: 90, 150;
     stroke-dashoffset: -124;
   }
+}
+
+button{
+    cursor: pointer;
 }

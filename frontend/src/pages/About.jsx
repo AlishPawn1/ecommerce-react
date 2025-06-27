@@ -1,59 +1,69 @@
-import React from 'react'
-import Title from '../components/Title'
+import React from 'react';
+import { assets } from '../assets/assets';
 
 const About = () => {
   return (
-    <section className="about-section bg-gray-100 py-16">
-      <div className="container mx-auto px-4">
-        <div className="text-center text-3xl">
-          {/* Title Section */}
-          <Title text1={'About'} text2={'Us'} />
-        </div>
-
-        {/* About Content */}
-        <div className="mt-12 text-center text-gray-700">
-          <p className="text-xl sm:text-2xl md:text-3xl font-semibold leading-relaxed">
-            We are a passionate team dedicated to bringing high-quality products and services.
-          </p>
-          <p className="mt-6 text-base sm:text-lg md:text-xl">
-            Our mission is to revolutionize the way people interact with technology, providing innovative solutions that simplify everyday tasks and enhance productivity.
+    <section className="bg-white py-20">
+      <div className="max-w-6xl mx-auto px-4">
+        {/* Intro Title */}
+        <div className="text-center mb-14">
+          <h1 className="text-4xl font-bold text-gray-800">About Our Brand</h1>
+          <p className="text-gray-500 mt-4 max-w-2xl mx-auto">
+            Where tradition meets innovation — delivering quality you can trust.
           </p>
         </div>
 
-        {/* Mission Section */}
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-            <h3 className="text-2xl font-semibold text-gray-800">Our Mission</h3>
-            <p className="mt-4 text-gray-600">
-              We aim to make a positive impact on society through our cutting-edge products that serve as solutions for modern problems.
-            </p>
+        {/* Two Column Layout */}
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div>
+            <img
+              src={assets.about_img}
+              alt="Our Story"
+              className="rounded-lg shadow-md"
+            />
           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-            <h3 className="text-2xl font-semibold text-gray-800">Our Values</h3>
-            <p className="mt-4 text-gray-600">
-              Integrity, customer satisfaction, and innovation are at the core of our values, driving everything we do.
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Who We Are</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We are a passionate team driven by craftsmanship and culture. Every product we create tells a story of heritage,
+              quality, and community. From handcrafted garments to unique accessories, we strive to blend tradition with today’s modern lifestyle.
             </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-            <h3 className="text-2xl font-semibold text-gray-800">Our Vision</h3>
-            <p className="mt-4 text-gray-600">
-              To become a leading force in the tech industry, known for our innovation, excellence, and customer-centric approach.
+            <p className="text-gray-600 leading-relaxed mt-4">
+              Founded with a belief in celebrating identity, we empower artisans and bring meaningful products to people around the world.
             </p>
           </div>
         </div>
 
-        {/* Contact Section */}
-        <div className="mt-16 text-center">
-          <p className="text-lg text-gray-800">Want to learn more? Reach out to us today!</p>
-          <button className="btn-box btn-black">
+        {/* Values Grid */}
+        <div className="mt-20 grid md:grid-cols-3 gap-8 text-center">
+          <div className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Authenticity</h3>
+            <p className="text-gray-600">Every product is rooted in tradition and made with genuine intention.</p>
+          </div>
+          <div className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Quality</h3>
+            <p className="text-gray-600">Crafted with premium materials and attention to detail you can feel.</p>
+          </div>
+          <div className="bg-gray-50 p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Community</h3>
+            <p className="text-gray-600">We support local artisans and give back to the communities we work with.</p>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="mt-20 text-center">
+          <h2 className="text-2xl font-bold text-gray-800">Want to collaborate or learn more?</h2>
+          <p className="text-gray-600 mt-2">We’d love to hear from you. Reach out and let’s connect!</p>
+          <a
+            href="/contact"
+            className="white-btn btn mt-5"
+          >
             Contact Us
-          </button>
+          </a>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default About
+export default About;

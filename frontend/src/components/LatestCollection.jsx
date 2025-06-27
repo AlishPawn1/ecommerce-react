@@ -17,7 +17,7 @@ const LatestCollection = () => {
     <section className='latest-collection-section my-10'>
       <div className='container'>
         <div className='text-center py-8 text-3xl'>
-          <Title text1={'Latest'} text2={'Collection'} text3={'This is random text that content random text'} />
+          <Title text1={'Latest'} text2={'Collection'} text3={'Discover our newest arrivals—fresh styles, trending designs, and exclusive products just for you.'} />
         </div>
 
         {/* rendering products */}

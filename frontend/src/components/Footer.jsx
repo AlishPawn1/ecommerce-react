@@ -15,7 +15,7 @@ const Footer = () => {
                             <img src={assets.logo} className='w-auto' alt="logo"/>
                         </Link>
                     </div>
-                    <p className='w-full md:w-2/3 text-gray-600'>This is footer paragraph text.</p>
+                    <p className='w-full md:w-2/3 text-gray-600'>Thank you for visiting our store. We’re committed to offering quality products, secure shopping, and exceptional customer service. Stay connected for the latest updates and exclusive offers.</p>
                 </div>
                 <div>
                     <h3 className='text-xl font-medium mb-5 uppercase'>Company</h3>
@@ -23,7 +23,6 @@ const Footer = () => {
                         <li><Link to='/'>Home</Link></li>
                         {/* <li><span onClick={() => navigate('/about')} className='cursor-pointer'>About</span></li> */}
                         <li><Link to='/about'>About Us</Link></li>
-                        <li><Link to='/delivery'>Delivery</Link></li>
                         <li><Link to='/privacy-policy'>Privacy Policy</Link></li>
                         <li><Link to='/contact'>Contact</Link></li>
                         <li><Link to='/collection'>Collection</Link></li>

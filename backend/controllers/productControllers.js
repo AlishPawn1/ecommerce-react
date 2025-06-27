@@ -8,7 +8,7 @@ import userModel from '../models/userModel.js';
 // Add продукт
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, subCategory, size, bestseller, stock } = req.body;
+    const { name, description, price, category, subCategory, size, bestseller, stock, additionalDescription } = req.body;
 
     if (!name || !description || !price || !category || !subCategory) {
       return res.status(400).json({ success: false, message: 'Missing required fields' });
@@ -51,6 +51,7 @@ const addProduct = async (req, res) => {
       bestseller: bestseller === 'true',
       stock: parseInt(stock, 10) || 0,
       image: imageUrls,
+      additionalDescription,
       date: Date.now(),
     });
 

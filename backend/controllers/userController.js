@@ -8,18 +8,17 @@ import { v2 as cloudinary } from "cloudinary";
 
 // Function to create a JWT token
 const createToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 };
 
 // Generate 6-digit code
 const generateVerificationCode = () => {
-    return crypto.randomInt(100000, 999999).toString();
+  return crypto.randomInt(100000, 999999).toString();
 };
 
 // Route for user registration
 const registerUser = async (req, res) => {
   const { name, email, password, address, number } = req.body;
-  let imageUrl = '';
 
   try {
     // Check if user already exists
@@ -42,13 +41,19 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: "Phone number must be 10 digits starting with 98, 97, or 96" });
     }
 
-    // Handle image upload to Cloudinary if provided
-    if (req.file) {
-      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      const result = await cloudinary.uploader.upload(base64Image, {
-        folder: 'users',
-      });
-      imageUrl = result.secure_url;
+    // Check image uploaded (multer puts single file in req.file)
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image uploaded' });
+    }
+
+    // Upload image to Cloudinary
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: 'image',
+      folder: 'users',
+    });
+
+    if (!result.secure_url) {
+      return res.status(400).json({ success: false, message: 'Failed to upload image' });
     }
 
     // Hash password
@@ -58,21 +63,21 @@ const registerUser = async (req, res) => {
     // Generate verification code
     const code = generateVerificationCode();
 
-    // Create new user
+    // Create new user document
     const newUser = new userModel({
       name,
       email,
       password: hashedPassword,
       address,
       number,
-      image: imageUrl,
+      image: result.secure_url,
       verificationCode: code,
-      verificationCodeExpires: Date.now() + 30 * 60 * 1000,
+      verificationCodeExpires: Date.now() + 30 * 60 * 1000, // expires in 30 minutes
     });
 
     const user = await newUser.save();
 
-    // Send verification email
+    // Prepare verification email
     const frontendUrls = process.env.FRONTEND_URLS.split(',').map(url => url.trim().replace(/\/+$/, ''));
     const baseUrl = frontendUrls[0];
     const verificationLink = `${baseUrl}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
@@ -245,7 +250,7 @@ const resendCode = async (req, res) => {
     user.verificationCode = code;
     user.verificationCodeExpires = Date.now() + 30 * 60 * 1000;
     await user.save();
-    
+
     const frontendUrls = process.env.FRONTEND_URLS.split(',').map(url => url.trim().replace(/\/+$/, ''));
     const baseUrl = frontendUrls[0];
     const verificationLink = `${baseUrl}/email-verify?email=${encodeURIComponent(email)}&code=${code}`;
@@ -308,4 +313,165 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { registerUser, loginUser, verifyEmail, verifyCode, resendCode, adminLogin, getAllUsers, deleteUser, getUserProfile };
+const updateUserProfile = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById(decoded.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { name, number, address, password } = req.body;
+
+    if (name) user.name = name;
+    if (number) user.number = number;
+    if (address) user.address = address;
+
+    if (password) {
+      if (password.length < 8) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: 'image',
+        folder: 'users',
+      });
+
+      if (!result.secure_url) {
+        return res.status(400).json({ success: false, message: 'Failed to upload image' });
+      }
+
+      user.image = result.secure_url;
+    }
+
+    await user.save();
+
+    // Remove sensitive info before sending response
+    const userResponse = {
+      name: user.name,
+      email: user.email,
+      number: user.number,
+      address: user.address,
+      image: user.image,
+      isVerified: user.isVerified,
+    };
+
+    res.status(200).json({ success: true, user: userResponse });
+  } catch (error) {
+    console.error('Error updating profile:', error.message);
+    res.status(500).json({ success: false, message: 'Failed to update profile' });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    // Find user by email
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found with this email' });
+    }
+
+    // Generate a random reset token (hex string)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    // Set token expiration 1 hour from now
+    const resetTokenExpiry = Date.now() + 3600000;
+
+    // Save token and expiry on user document
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = resetTokenExpiry;
+    await user.save();
+
+    // Construct reset URL for frontend
+    const frontendUrls = (process.env.FRONTEND_URLS || 'http://localhost:5173')
+      .split(',')
+      .map(url => url.trim().replace(/\/+$/, ''));
+    const baseUrl = frontendUrls[0];
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+
+    // Email message content
+    const message = `
+      <h3>Password Reset Request</h3>
+      <p>You requested a password reset. Click the link below to reset your password:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    // Send reset email
+    await sendEmail(email, 'Password Reset Request', message);
+
+    console.log(`Password reset email sent: ${resetUrl}`);
+
+    res.status(200).json({ success: true, message: 'Password reset email sent. Please check your inbox.' });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error while processing forgot password.' });
+  }
+};
+
+// Reset Password: Validate token + expiry, update password
+const resetPassword = async (req, res) => {
+  const { token, email, password } = req.body;
+
+  console.log('Reset password request:', { token, email, passwordProvided: !!password });
+
+  try {
+    if (!token || !email || !password) {
+      return res.status(400).json({ success: false, message: 'Token, email and new password are required' });
+    }
+
+    // Find user with matching email and reset token AND token not expired
+    const user = await userModel.findOne({ email });
+
+    // Debug logs for token and expiry in DB
+    console.log('Stored reset token:', user?.resetPasswordToken);
+    console.log('Stored token expiry:', user?.resetPasswordExpires);
+    console.log('Current time:', Date.now());
+
+    // Check user exists, token matches, and token is not expired
+    if (
+      !user ||
+      user.resetPasswordToken !== token ||
+      !user.resetPasswordExpires ||
+      user.resetPasswordExpires < Date.now()
+    ) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired token' });
+    }
+
+    // Validate password length
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    // Clear reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ success: false, message: 'Server error while resetting password' });
+  }
+};
+
+export { registerUser, loginUser, verifyEmail, verifyCode, resendCode, adminLogin, getAllUsers, deleteUser, getUserProfile, updateUserProfile, forgotPassword, resetPassword };

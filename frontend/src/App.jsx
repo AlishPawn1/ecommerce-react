@@ -22,6 +22,7 @@ import ScrollToTop from './components/ScrollToTop'
 import ProfileCard from './pages/ProfileCard'
 import ChatBot from './components/ChatBot'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import ResetPassword from './components/ResetPassword'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -46,6 +47,7 @@ const App = () => {
         <Route path="/payment-verify" element={<Verify/>}/>
         <Route path='/profile' element={<ProfileCard />}/>
         <Route path='/privacy-policy' element={<PrivacyPolicy />}/>
+        <Route path='/reset-password' element={<ResetPassword />}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ChatBot/>

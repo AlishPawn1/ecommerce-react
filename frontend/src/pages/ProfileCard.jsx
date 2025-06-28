@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { backendUrl } from '../App';
 import { assets } from '../assets/assets';
+import { ShopContext } from '../context/ShopContext';
+import { toast } from 'react-toastify';
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 const ProfileCard = () => {
     const [user, setUser] = useState(null);
@@ -13,10 +16,14 @@ const ProfileCard = () => {
         number: '',
         address: '',
         image: null,
+        password: '',
+        email: '',
     });
     const [formErrors, setFormErrors] = useState({});
     const [totalOrders, setTotalOrders] = useState(0);
     const [totalReviews, setTotalReviews] = useState(0);
+    const [showPassword, setShowPassword] = useState(false);
+    const { navigate } = useContext(ShopContext);
 
     // Fetch user profile data
     useEffect(() => {
@@ -24,9 +31,13 @@ const ProfileCard = () => {
         if (!token) return;
 
         const fetchProfile = axios.get(`${backendUrl}/api/user/profile`, { headers: { Authorization: `Bearer ${token}` } });
-        const fetchOrders = axios.post(`${backendUrl}/api/order/userorders`, {}, { headers: { Authorization: `Bearer ${token}` } });
+        const fetchOrders = axios.post(
+            `${backendUrl}/api/order/userorders`,
+            {},
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
         const fetchReviews = axios.get(`${backendUrl}/api/product/my-reviews/count`, {
-        headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
         });
 
         Promise.all([fetchProfile, fetchOrders, fetchReviews])
@@ -37,6 +48,8 @@ const ProfileCard = () => {
                     number: profileRes.data.user.number,
                     address: profileRes.data.user.address,
                     image: null,
+                    password: '',
+                    email: profileRes.data.user.email,
                 });
                 if (ordersRes.data.success) setTotalOrders(ordersRes.data.orders.length);
                 if (reviewsRes.data.success) setTotalReviews(reviewsRes.data.totalReviews);
@@ -47,7 +60,6 @@ const ProfileCard = () => {
                 setLoading(false);
             });
     }, []);
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -66,6 +78,9 @@ const ProfileCard = () => {
         }
         if (!formData.address || formData.address.trim().split(' ').length < 2) {
             errors.address = 'Address must contain at least 2 words';
+        }
+        if (formData.password && formData.password.length < 8) {
+            errors.password = 'Password must be at least 8 characters if you want to change it';
         }
         return errors;
     };
@@ -87,16 +102,23 @@ const ProfileCard = () => {
             if (formData.image) {
                 formDataToSend.append('image', formData.image);
             }
+            if (formData.password) {
+                formDataToSend.append('password', formData.password);
+            }
+
             const response = await axios.put(`${backendUrl}/api/user/profile`, formDataToSend, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
             setUser(response.data.user);
             setIsEditing(false);
             setFormErrors({});
+            toast.success('Update successfully');
         } catch (err) {
+            console.error('Update error:', err.response?.data || err.message);
             setError(err.response?.data?.message || 'Failed to update profile');
         }
     };
@@ -123,7 +145,7 @@ const ProfileCard = () => {
                 <div className="flex flex-col items-center">
                     <div className="relative">
                         <img
-                            src={user.image ? `${backendUrl}/${user.image}` : assets.fallback_image}
+                            src={user.image ? `${user.image}` : assets.fallback_image}
                             alt="Profile"
                             className="w-36 h-36 rounded-full object-cover border-4 border-indigo-200 transition-transform duration-300 hover:rotate-6"
                         />
@@ -161,16 +183,17 @@ const ProfileCard = () => {
                         Edit Profile
                     </button>
                     <button
-                        onClick={() => alert('View Orders functionality not implemented')}
+                        onClick={() => navigate('/order')}
                         className="bg-gray-100 text-gray-800 px-6 py-3 rounded-full font-medium hover:bg-gray-200 transition-all duration-300"
                     >
                         View Orders
                     </button>
                 </div>
 
+                {/* Edit Modal */}
                 {isEditing && (
-                    <div className="fixed inset-0 bg-[#00000033] backdrop-blur-sm flex items-center justify-center">
-                        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                    <div className="fixed inset-0 bg-[#00000033] backdrop-blur-sm flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
                             <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-4">
@@ -184,6 +207,7 @@ const ProfileCard = () => {
                                     />
                                     {formErrors.name && <p className="text-red-500 text-sm">{formErrors.name}</p>}
                                 </div>
+
                                 <div className="mb-4">
                                     <label className="block text-gray-700">Phone Number</label>
                                     <input
@@ -195,6 +219,7 @@ const ProfileCard = () => {
                                     />
                                     {formErrors.number && <p className="text-red-500 text-sm">{formErrors.number}</p>}
                                 </div>
+
                                 <div className="mb-4">
                                     <label className="block text-gray-700">Address</label>
                                     <input
@@ -206,6 +231,42 @@ const ProfileCard = () => {
                                     />
                                     {formErrors.address && <p className="text-red-500 text-sm">{formErrors.address}</p>}
                                 </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-gray-700">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        readOnly
+                                        disabled
+                                        className="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+                                    />
+                                </div>
+
+                                {/* Password field with show/hide */}
+                                <div className="mb-4">
+                                    <label className="block text-gray-700">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border rounded pr-10"
+                                            placeholder="Password"
+                                        />
+                                        <div
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+                                        </div>
+                                    </div>
+                                    {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
+                                </div>
+
+
                                 <div className="mb-4">
                                     <label className="block text-gray-700">Profile Image</label>
                                     <input
@@ -216,18 +277,20 @@ const ProfileCard = () => {
                                         className="w-full p-2 border rounded"
                                     />
                                 </div>
+
                                 <div className="flex justify-end space-x-4">
                                     <button
                                         type="button"
-                                        onClick={() => setIsEditing(false)}
+                                        onClick={() => {
+                                            setIsEditing(false);
+                                            setFormErrors({});
+                                            setFormData({ ...formData, password: '', image: null });
+                                        }}
                                         className="bg-gray-100 text-gray-800 px-4 py-2 rounded"
                                     >
                                         Cancel
                                     </button>
-                                    <button
-                                        type="submit"
-                                        className="bg-indigo-500 text-white px-4 py-2 rounded"
-                                    >
+                                    <button type="submit" className="bg-indigo-500 text-white px-4 py-2 rounded">
                                         Save
                                     </button>
                                 </div>

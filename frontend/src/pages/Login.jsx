@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useSearchParams } from 'react-router-dom';
 import LoadingScreen from '../components/LoadingScreen';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const Login = () => {
   const [currentState, setCurrentState] = useState('Login');
@@ -20,6 +21,13 @@ const Login = () => {
   const [address, setAddress] = useState('');
   const [number, setNumber] = useState('');
   const [image, setImage] = useState(null);
+
+  // New state for forgot password email input and loading
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Show/hide password state
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('verified') === 'true') {
@@ -44,6 +52,26 @@ const Login = () => {
       toast.error(error.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    try {
+      const response = await axios.post(`${backendUrl}/api/user/forgot-password`, { email: forgotEmail });
+      if (response.data.success) {
+        toast.success(response.data.message || 'Password reset email sent.');
+        setCurrentState('Login');
+        setForgotEmail('');
+      } else {
+        toast.error(response.data.message || 'Failed to send reset email.');
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      toast.error(error.response?.data?.message || 'Something went wrong.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -93,7 +121,7 @@ const Login = () => {
             toast.error(response.data.message || 'Verification failed');
           }
         }
-      } else {
+      } else if (currentState === 'Login') {
         console.log('Login payload:', { email, password });
         response = await axios.post(`${backendUrl}/api/user/login`, { email, password });
         if (response.data.success) {
@@ -120,16 +148,29 @@ const Login = () => {
 
   return (
     <section className="login-section">
-      {loading && <LoadingScreen />}
+      {(loading || forgotLoading) && <LoadingScreen />}
       <div className="container">
         <form
-          onSubmit={onSubmitHandler}
+          onSubmit={(e) => {
+            if (currentState === 'Forgot Password') {
+              handleForgotPassword(e);
+            } else {
+              onSubmitHandler(e);
+            }
+          }}
           className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-900"
         >
           <div className="inline-flex items-center gap-2 mb-2 mt-10">
-            <h1 className="primary-font text-3xl">{currentState === 'Verify' ? 'Verify Email' : currentState}</h1>
+            <h1 className="primary-font text-3xl">
+              {currentState === 'Verify'
+                ? 'Verify Email'
+                : currentState === 'Forgot Password'
+                ? 'Forgot Password'
+                : currentState}
+            </h1>
             <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
           </div>
+
           {currentState === 'Sign Up' && (
             <>
               <input
@@ -164,6 +205,7 @@ const Login = () => {
               />
             </>
           )}
+
           {(currentState === 'Login' || currentState === 'Sign Up' || currentState === 'Verify') && (
             <input
               onChange={(e) => setEmail(e.target.value)}
@@ -174,16 +216,29 @@ const Login = () => {
               required
             />
           )}
+
           {(currentState === 'Login' || currentState === 'Sign Up') && (
-            <input
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              type="password"
-              className="w-full px-3 py-2 border border-gray-800"
-              placeholder="Password"
-              required
-            />
+            <div className="relative w-full">
+              <input
+                onChange={(e) => setPassword(e.target.value)}
+                value={password}
+                type={showPassword ? 'text' : 'password'}
+                className="w-full px-3 py-2 border border-gray-800 pr-10"
+                placeholder="Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+              </button>
+            </div>
           )}
+
           {currentState === 'Verify' && (
             <>
               <input
@@ -201,21 +256,57 @@ const Login = () => {
               )}
             </>
           )}
+
+          {/* Forgot Password UI */}
+          {currentState === 'Forgot Password' && (
+            <>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-800"
+              />
+              <div className="w-full flex justify-between text-sm mt-[-8px]">
+                <p onClick={() => setCurrentState('Login')} className="cursor-pointer">
+                  Back to Login
+                </p>
+              </div>
+            </>
+          )}
+
           <div className="w-full flex justify-between text-sm mt-[-8px]">
-            {currentState !== 'Verify' && (
-              <p onClick={() => { setCurrentState('Verify'); setShowVerification(true); }} className="cursor-pointer">
+            {currentState !== 'Verify' && currentState !== 'Forgot Password' && (
+              <p
+                onClick={() => {
+                  setCurrentState('Verify');
+                  setShowVerification(true);
+                }}
+                className="cursor-pointer"
+              >
                 Verify code
               </p>
             )}
-            {currentState === 'Login' ? (
-              <p onClick={() => setCurrentState('Sign Up')} className="cursor-pointer">
-                Create account
-              </p>
-            ) : currentState === 'Sign Up' ? (
+
+            {currentState === 'Login' && (
+              <>
+                <p onClick={() => setCurrentState('Forgot Password')} className="cursor-pointer">
+                  Forgot Password?
+                </p>
+                <p onClick={() => setCurrentState('Sign Up')} className="cursor-pointer">
+                  Create account
+                </p>
+              </>
+            )}
+
+            {currentState === 'Sign Up' && (
               <p onClick={() => setCurrentState('Login')} className="cursor-pointer">
                 Login Here
               </p>
-            ) : (
+            )}
+
+            {currentState === 'Verify' && (
               <p
                 onClick={() => {
                   setCurrentState('Login');
@@ -229,8 +320,19 @@ const Login = () => {
               </p>
             )}
           </div>
-          <button type="submit" className="btn-box btn-black" disabled={loading}>
-            {currentState === 'Login' ? 'Sign In' : currentState === 'Sign Up' ? 'Sign Up' : 'Verify'}
+
+          <button
+            type="submit"
+            className="btn-box btn-black"
+            disabled={loading || forgotLoading}
+          >
+            {currentState === 'Login'
+              ? 'Sign In'
+              : currentState === 'Sign Up'
+              ? 'Sign Up'
+              : currentState === 'Verify'
+              ? 'Verify'
+              : 'Send Reset Link'}
           </button>
         </form>
       </div>

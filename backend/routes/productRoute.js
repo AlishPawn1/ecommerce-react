@@ -124,5 +124,12 @@ productRouter.get('/my-reviews/count', authUser, async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to count reviews' });
   }
 });
+productRouter.get('/slug/:slug', async (req, res) => {
+  const product = await productModel.findOne({ slug: req.params.slug });
+  if (!product) return res.status(404).json({ success: false, message: 'Not found' });
+  res.json({ success: true, product });
+});
+
+
 
 export default productRouter;

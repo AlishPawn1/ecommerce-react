@@ -512,3 +512,9 @@ header {
 button{
     cursor: pointer;
 }
+.order-item {
+    border-top: 1px solid ;
+}
+.order-item:last-child{
+    border-bottom: 1px solid;
+}

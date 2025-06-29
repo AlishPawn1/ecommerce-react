@@ -52,11 +52,6 @@ const Order = () => {
         loadOrderData();
     }, [token]);
 
-    const handleTrackOrder = (item) => {
-        // Implement tracking logic here (e.g., navigate to a tracking page or make an API call)
-        console.log('Tracking order for item:', item);
-    };
-
     return (
         <section className="order-section pt-16">
             <div className="container">
@@ -72,7 +67,7 @@ const Order = () => {
                             const productData = products.find((product) => product._id === item._id);
                             return (
                                 <div
-                                    className="py-4 border-t border-b text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                                    className="order-item py-4 text-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
                                     key={index}
                                 >
                                     <div className="flex items-start gap-6 text-sm">
@@ -106,17 +101,11 @@ const Order = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="md:w-1/2 flex justify-between">
+                                    <div className="md:w-1/2 flex justify-end">
                                         <div className="flex items-center gap-2">
                                             <p className="min-w-2 h-2 rounded-full bg-green-500"></p>
                                             <p className="text-sm md:text-base">{item.status ?? 'Unknown'}</p>
                                         </div>
-                                        <button
-                                            className="btn-box btn-transprance"
-                                            onClick={() => handleTrackOrder(item)}
-                                        >
-                                            Track Order
-                                        </button>
                                     </div>
                                 </div>
                             );

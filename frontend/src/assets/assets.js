@@ -20,8 +20,7 @@ import dropDown from './dropDown.svg'
 import removeIcon from './remove.svg'
 import esewa from './esewa.png'
 import esewaLogo from './esewaLogo.png'
-import khalti from './khalti.png'
-import khaltiLogo from './khaltiLogo.png'
+import khalti from './khaltiLogo.png'
 import stripe from './stripeLogo.svg'
 import childNewariDress from './child-in-newar-dress.png'
 import girlNewariDress from './newari-dress-girl.png'
@@ -58,7 +57,6 @@ export const assets = {
   esewa,
   esewaLogo,
   khalti,
-  khaltiLogo,
   stripe,
   childNewariDress,
   girlNewariDress,

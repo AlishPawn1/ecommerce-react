@@ -12,12 +12,12 @@ const PlaceOrder = () => {
     token,
     cartItem,
     getCartAmount,
-    delivery_fee,
     products,
     setCartItems,
     navigate,
-    userId, // Assume userId is available in ShopContext
+    user, // get full user object here
   } = useContext(ShopContext);
+
   const [method, setMethod] = useState("cod");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,6 +45,12 @@ const PlaceOrder = () => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
+    if (!user.userId) {
+      toast.error("Please log in to place your order.");
+      navigate("/login");
+      return;
+    }
+
     try {
       let orderItems = [];
 
@@ -69,10 +75,10 @@ const PlaceOrder = () => {
       }
 
       let orderData = {
-        userId: userId, // Ensure userId is included
+        userId: user.userId, // use user.userId here
         address: formData,
         items: orderItems,
-        amount: getCartAmount() + delivery_fee,
+        amount: getCartAmount(),
       };
 
       console.log("Frontend Order Data:", orderData);
@@ -128,25 +134,6 @@ const PlaceOrder = () => {
             window.location.replace(session_url);
           } else {
             toast.error(responseKhalti.data.message);
-          }
-          break;
-
-        case "esewa":
-          const responseEsewa = await axios.post(
-            `${backendUrl}/api/order/esewa`,
-            orderData,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          );
-
-          console.log("Esewa Response:", responseEsewa.data);
-
-          if (responseEsewa.data.success) {
-            const { session_url } = responseEsewa.data;
-            window.location.replace(session_url);
-          } else {
-            toast.error(responseEsewa.data.message);
           }
           break;
 
@@ -277,7 +264,7 @@ const PlaceOrder = () => {
             <div className="mt-12">
               <Title text1="Payment" text2="Method" />
               <div className="grid gap-3 grid-cols-1 lg:grid-cols-4 sm:grid-cols-2">
-                {["cod", "stripe", "khalti", "esewa"].map((payMethod) => (
+                {["cod", "stripe", "khalti"].map((payMethod) => (
                   <div
                     key={payMethod}
                     onClick={() => setMethod(payMethod)}
@@ -285,18 +272,12 @@ const PlaceOrder = () => {
                   >
                     <p
                       className={`min-w-3.5 h-3.5 border rounded-full ${
-                        method === payMethod
-                          ? "bg-green-400 border-green-400"
-                          : ""
+                        method === payMethod ? "bg-green-400 border-green-400" : ""
                       }`}
                     ></p>
                     {payMethod !== "cod" ? (
                       assets[payMethod] ? (
-                        <img
-                          src={assets[payMethod]}
-                          className="h-5"
-                          alt={payMethod}
-                        />
+                        <img src={assets[payMethod]} className="h-5" alt={payMethod} />
                       ) : (
                         <p className="text-red-500 text-sm">Image not found</p>
                       )

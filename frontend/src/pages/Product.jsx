@@ -1,15 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Added useNavigate
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { ShopContext } from "../context/ShopContext";
 import RelatedProduct from "../components/RelatedProduct";
 import { assets } from "../assets/assets";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { backendUrl } from "../App"; // adjust path if needed
+
 const Product = () => {
-  const { productId } = useParams();
-  const navigate = useNavigate(); // Initialize navigate
-  const { products, currency, addToCart, token, user, incrementViewCount, addReview } = useContext(ShopContext);
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const { currency, addToCart, token, user, incrementViewCount, addReview } = useContext(ShopContext);
+  
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
@@ -20,22 +24,31 @@ const Product = () => {
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
 
   useEffect(() => {
-    if (products.length > 0) {
-      const foundProduct = products.find((item) => item._id === productId);
-      if (foundProduct) {
-        setProductData(foundProduct);
-        setImage(foundProduct.image?.[0] || assets.placeholderImage);
-        incrementViewCount(productId);
-      } else {
-        console.warn(`⚠️ Product with ID ${productId} not found.`);
-      }
-    }
-  }, [products, productId, incrementViewCount]);
+    if (!slug) return;
+
+    axios
+      .get(`${backendUrl}/api/product/slug/${slug}`)
+      .then((res) => {
+        if (res.data.success) {
+          setProductData(res.data.product);
+          setImage(res.data.product.image?.[0] || assets.placeholderImage);
+          incrementViewCount(res.data.product._id);
+        } else {
+          toast.error("Product not found");
+          navigate("/collection");
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Error loading product");
+        navigate("/collection");
+      });
+  }, [slug, incrementViewCount, navigate]);
 
   const handleAddToCart = () => {
     if (!token) {
       toast.error("Please log in to add to cart.");
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
       return;
     }
     if (productData?.stock <= 0) {
@@ -47,33 +60,28 @@ const Product = () => {
       return;
     }
     addToCart(productData?._id, size);
-    // toast.success("Product added to cart!");
   };
 
   const handleAddReview = async (e) => {
-    console.log("Form submission triggered");
     e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
-    console.log("after prevent default");
 
     if (!token) {
       toast.error("Please log in to submit a review.");
       setIsSubmitting(false);
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
       return;
     }
-
     if (!rating || !comment) {
       toast.error("Please provide a rating and comment.");
       setIsSubmitting(false);
       return;
     }
-
     if (!user?.userId || !user?.name) {
-      toast.error("User information is missing. Please log in again.");
+      toast.error("User info missing. Please log in again.");
       setIsSubmitting(false);
-      navigate("/login"); // Redirect to login page
+      navigate("/login");
       return;
     }
 
@@ -84,8 +92,7 @@ const Product = () => {
         userId: user.userId,
         username: user.name.trim(),
       };
-      console.log("Review payload:", reviewData);
-      await addReview(productId, reviewData);
+      await addReview(productData._id, reviewData);
 
       if (!reviewSubmitted) {
         toast.success("Review submitted successfully!");
@@ -111,7 +118,6 @@ const Product = () => {
     }
   };
 
-  // Function to calculate the new average rating
   const calculateNewAverageRating = (product, newRating) => {
     const currentAverage = product.averageRating || 0;
     const currentReviewCount = product.reviewCount || 0;
@@ -121,12 +127,13 @@ const Product = () => {
     return newTotalRating / newReviewCount;
   };
 
-  // Reset reviewSubmitted when productId changes
   useEffect(() => {
     setReviewSubmitted(false);
-  }, [productId]);
+  }, [slug]);
 
-  return productData ? (
+  if (!productData) return <div className="text-center py-20">Loading product...</div>;
+
+  return (
     <section className="product-detail-section">
       <div className="container">
         <div className="transition-opacity ease-in duration-500 opacity-100">
@@ -178,7 +185,7 @@ const Product = () => {
                       <button
                         key={index}
                         onClick={() => setSize(item)}
-                        className={`border p-2 bg-gray-100 ${item === size ? "border-orange-500" : ""} ${
+                        className={`border py-2 px-4 bg-gray-100 ${item === size ? "border-orange-500" : ""} ${
                           productData?.stock <= 0 || !token ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                         disabled={productData?.stock <= 0 || !token}
@@ -278,9 +285,7 @@ const Product = () => {
                     <div key={index} className="border-t pt-4">
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{review.username}</p>
-                        <p className="text-xs text-gray-400">
-                          {new Date(review.date).toLocaleDateString()}
-                        </p>
+                        <p className="text-xs text-gray-400">{new Date(review.date).toLocaleDateString()}</p>
                       </div>
                       <div className="flex gap-1 my-1">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -304,15 +309,10 @@ const Product = () => {
         </div>
 
         {productData?.category && (
-          <RelatedProduct
-            category={productData.category}
-            subCategory={productData?.subCategory}
-          />
+          <RelatedProduct category={productData.category} subCategory={productData?.subCategory} />
         )}
       </div>
     </section>
-  ) : (
-    <div className="text-center py-20">Loading product...</div>
   );
 };
 

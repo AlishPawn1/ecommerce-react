@@ -2,14 +2,12 @@ import React, { useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { Link } from 'react-router-dom';
 
-const ProductItem = ({ _id, image, name, price, stock }) => {
+const ProductItem = ({ _id, slug, image, name, price, stock }) => {
     const { currency } = useContext(ShopContext);
-    // console.log(stock);
 
     return (
-        <Link className="text-gray-700 cursor-pointer" to={`/product/${_id}`}>
+        <Link className="text-gray-700 cursor-pointer" to={`/product/${slug}`}>
             <div className="relative overflow-hidden image h-[250px]">
-                {/* Check if image exists */}
                 {image && image?.length > 0 ? (
                     <img
                         src={image[0]}
@@ -19,7 +17,6 @@ const ProductItem = ({ _id, image, name, price, stock }) => {
                 ) : (
                     <p>Image not available</p>
                 )}
-                {/* Out of Stock Badge */}
                 {stock <= 0 && (
                     <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded">
                         Out of Stock

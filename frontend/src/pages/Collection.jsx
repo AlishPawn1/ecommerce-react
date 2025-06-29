@@ -199,7 +199,7 @@ const Collection = () => {
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-8">
                             {filterProducts.length > 0 ? (
                                 filterProducts.map((item, index) => (
-                                    <ProductItem key={index} _id={item._id} image={item.image} name={item.name} price={item.price} stock={item.stock} />
+                                    <ProductItem key={index} _id={item._id} slug={item.slug} image={item.image} name={item.name} price={item.price} stock={item.stock} />
                                 ))
                             ) : (
                                 <p>No products available</p>

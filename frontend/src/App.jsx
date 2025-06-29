@@ -23,6 +23,9 @@ import ProfileCard from './pages/ProfileCard'
 import ChatBot from './components/ChatBot'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import ResetPassword from './components/ResetPassword'
+import PaymentReturn from './pages/PaymentReturn'
+import PaymentFailed from './pages/PaymentFailed'
+import OrderSuccess from './pages/OrderSuccess'
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -39,7 +42,8 @@ const App = () => {
         <Route path='/collection' element={<Collection/>}/>
         <Route path='/about' element={<About/>}/>
         <Route path='/contact' element={<Contact/>}/>
-        <Route path='/product/:productId' element={<Product/>}/>
+        {/* <Route path='/product/:productId' element={<Product/>}/> */}
+        <Route path='/product/:slug' element={<Product/>}/>
         <Route path='/cart' element={<Cart/>}/>
         <Route path='/login' element={<Login/>}/>
         <Route path="/place-order" element={<PlaceOrder/>}/>
@@ -48,6 +52,9 @@ const App = () => {
         <Route path='/profile' element={<ProfileCard />}/>
         <Route path='/privacy-policy' element={<PrivacyPolicy />}/>
         <Route path='/reset-password' element={<ResetPassword />}/>
+        <Route path="/payment-return" element={<PaymentReturn />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <ChatBot/>

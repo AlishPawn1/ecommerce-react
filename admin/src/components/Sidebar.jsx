@@ -76,9 +76,6 @@ const Sidebar = () => {
               <li>
                 <NavLink to="/listUser">User</NavLink>
               </li>
-              <li>
-                <NavLink to="/listReport">List Report</NavLink>
-              </li>
             </ul>
           )}
         </li>

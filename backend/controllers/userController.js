@@ -8,7 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 
 // Function to create a JWT token
 const createToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
 // Generate 6-digit code

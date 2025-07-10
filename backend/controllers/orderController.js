@@ -228,83 +228,6 @@ const verifyKhalti = async (req, res) => {
   }
 };
 
-// Place order with Esewa payment
-const placeOrderEsewa = async (req, res) => {
-  try {
-    const { userId, items, amount, address } = req.body;
-    const origin = req.headers.origin || "http://localhost:5173";
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ success: false, message: "Invalid userId format" });
-    }
-    if (!items || !amount || !address) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
-    }
-
-    const orderData = {
-      userId,
-      items,
-      address,
-      amount,
-      paymentMethod: "Esewa",
-      payment: false,
-      date: new Date(),
-    };
-
-    const newOrder = new orderModel(orderData);
-    await newOrder.save();
-
-    const params = new URLSearchParams({
-      amt: amount,
-      psc: 0,
-      txAmt: 0,
-      tAmt: amount,
-      pid: newOrder._id.toString(),
-      scd: "EPAYTEST", // Merchant code, replace with your actual
-      su: `${origin}/payment-verify?success=true&orderId=${newOrder._id}&gateway=esewa`,
-      fu: `${origin}/payment-verify?success=false&orderId=${newOrder._id}&gateway=esewa`,
-    });
-
-    const esewaURL = `https://uat.esewa.com.np/epay/main?${params.toString()}`;
-
-    res.status(200).json({ success: true, session_url: esewaURL });
-  } catch (error) {
-    console.error("Esewa Error:", error);
-    res.status(500).json({ success: false, message: "Failed to place order using Esewa", error: error.message });
-  }
-};
-
-// Verify Esewa payment
-const verifyEsewa = async (req, res) => {
-  try {
-    const { success, orderId } = req.query;
-
-    if (!orderId) {
-      return res.status(400).json({ success: false, message: "Missing orderId" });
-    }
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ success: false, message: "Invalid orderId format" });
-    }
-
-    const order = await orderModel.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
-    }
-
-    if (success === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { payment: true, status: "Paid" });
-      await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
-      return res.redirect(`/order-success?orderId=${orderId}`);
-    } else {
-      await orderModel.findByIdAndDelete(orderId);
-      return res.redirect(`/payment-failed?orderId=${orderId}`);
-    }
-  } catch (error) {
-    console.error("Esewa verification error:", error);
-    res.status(500).json({ success: false, message: "Esewa verification failed", error: error.message });
-  }
-};
-
 // Fetch all orders (admin)
 const allOrders = async (req, res) => {
   try {
@@ -422,10 +345,8 @@ export {
   placeOrder,
   placeOrderStripe,
   placeOrderKhalti,
-  placeOrderEsewa,
   verifyStripe,
   verifyKhalti,
-  verifyEsewa,
   allOrders,
   userOrder,
   updateStatus,

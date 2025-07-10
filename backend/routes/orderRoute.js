@@ -3,10 +3,8 @@ import {
   placeOrder,
   placeOrderStripe,
   placeOrderKhalti,
-  placeOrderEsewa,
   verifyStripe,
   verifyKhalti,
-  verifyEsewa,
   allOrders,
   userOrder,
   updateStatus,
@@ -31,7 +29,6 @@ orderRouter.get("/khalti/verify", verifyKhalti);
 
 // Payment verification routes
 orderRouter.post("/verifyStripe", verifyStripe);
-orderRouter.get("/verifyEsewa", verifyEsewa);
 
 // User orders
 orderRouter.post("/userorders", authUser, userOrder);

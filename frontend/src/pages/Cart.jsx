@@ -135,16 +135,18 @@ const Cart = () => {
                         <p className="text-center text-gray-500 mt-4">Your cart is empty.</p>
                     )}
 
-                    <div className="flex justify-end my-20">
-                        <div className="w-full sm:w-[450px]">
-                            <CartTotal />
-                            <div className="w-full text-end">
-                                <button onClick={() => navigate('/place-order')} className="btn-black">
-                                    Proceed to Checkout
-                                </button>
+                    {cartData.length > 0 && (
+                        <div className="flex justify-end my-20">
+                            <div className="w-full sm:w-[450px]">
+                                <CartTotal />
+                                <div className="w-full text-end">
+                                    <button onClick={() => navigate('/place-order')} className="btn-black">
+                                        Proceed to Checkout
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </section>

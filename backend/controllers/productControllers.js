@@ -663,13 +663,92 @@ const addReview = async (req, res) => {
   }
 };
 
+// const getTopProducts = async (req, res) => {
+//   try {
+//     const { by } = req.query;
+
+//     if (!['viewCount', 'averageRating'].includes(by)) {
+//       return res.status(400).json({ success: false, message: 'Invalid sort parameter' });
+//     }
+
+//     let products = await productModel.find().populate('reviews.user', 'name').lean();
+
+//     if (by === 'averageRating') {
+//       // Add score based on rating and review count
+//       products = products.map(p => ({
+//         ...p,
+//         score: p.averageRating * Math.log(p.reviewCount + 1),
+//       }));
+
+//       // Sort descending by score
+//       products.sort((a, b) => b.score - a.score);
+//     } else if (by === 'viewCount') {
+//       // Sort descending by viewCount
+//       products.sort((a, b) => b.viewCount - a.viewCount);
+//     }
+
+//     // Limit to top 5
+//     products = products.slice(0, 5);
+
+//     console.log(`Sorted by ${by}:`);
+//     products.forEach(p => {
+//       if (by === 'averageRating') {
+//         console.log(`- ${p.name} | averageRating: ${p.averageRating} | reviewCount: ${p.reviewCount} | score: ${p.score.toFixed(2)}`);
+//       } else {
+//         console.log(`- ${p.name} | viewCount: ${p.viewCount}`);
+//       }
+//     });
+
+//     res.json({ success: true, data: products });
+//   } catch (error) {
+//     console.error('Error fetching top products:', error);
+//     res.status(500).json({ success: false, message: 'Error fetching top products', error: error.message });
+//   }
+// };
+
 const getTopProducts = async (req, res) => {
   try {
     const { by } = req.query;
     if (!['viewCount', 'averageRating'].includes(by)) {
       return res.status(400).json({ success: false, message: 'Invalid sort parameter' });
     }
-    const products = await productModel.find().sort({ [by]: -1 }).limit(5).populate('reviews.user', 'name');
+
+    // Fetch all products to calculate global average rating
+    const allProducts = await productModel.find({}).select('averageRating reviewCount').lean();
+
+    // Calculate global average rating C
+    const totalRatingSum = allProducts.reduce((sum, p) => sum + (p.averageRating * p.reviewCount), 0);
+    const totalReviewCount = allProducts.reduce((sum, p) => sum + p.reviewCount, 0);
+    const C = totalReviewCount ? totalRatingSum / totalReviewCount : 0;
+
+    const m = 5; // minimum reviews threshold, adjust as needed
+
+    // Fetch products for sorting
+    let products = await productModel.find().lean();
+
+    if (by === 'averageRating') {
+      // Add Bayesian score to each product
+      products = products.map(p => {
+        const score = (p.averageRating * p.reviewCount + C * m) / (p.reviewCount + m);
+        return { ...p, score };
+      });
+
+      // Sort by score descending
+      products.sort((a, b) => b.score - a.score);
+
+      // Limit top 5
+      products = products.slice(0, 5);
+
+      // Optional: Log for debugging
+      console.log('Sorted by Bayesian score:');
+      products.forEach(p => {
+        console.log(`- ${p.name} | averageRating: ${p.averageRating} | reviewCount: ${p.reviewCount} | score: ${p.score.toFixed(2)}`);
+      });
+    } else if (by === 'viewCount') {
+      // Sort by viewCount descending and limit
+      products = products.sort((a, b) => b.viewCount - a.viewCount).slice(0, 5);
+    }
+
     res.json({ success: true, data: products });
   } catch (error) {
     console.error('Error fetching top products:', error);

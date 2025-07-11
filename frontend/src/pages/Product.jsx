@@ -12,8 +12,8 @@ import { backendUrl } from "../App"; // adjust path if needed
 const Product = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { currency, addToCart, token, user, incrementViewCount, addReview } = useContext(ShopContext);
-  
+  const { currency, addToCart, token, user, incrementViewCount, addReview, deleteReview } = useContext(ShopContext);
+
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState("");
   const [size, setSize] = useState("");
@@ -22,6 +22,10 @@ const Product = () => {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  // States for reviews display
+  const [visibleReviews, setVisibleReviews] = useState(3);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -44,6 +48,15 @@ const Product = () => {
         navigate("/collection");
       });
   }, [slug, incrementViewCount, navigate]);
+
+  useEffect(() => {
+    setVisibleReviews(3);
+    setShowAll(false);
+    setReviewSubmitted(false);
+    setRating(0);
+    setComment("");
+    setSize("");
+  }, [slug]);
 
   const handleAddToCart = () => {
     if (!token) {
@@ -73,7 +86,7 @@ const Product = () => {
       navigate("/login");
       return;
     }
-    if (!rating || !comment) {
+    if (!rating || !comment.trim()) {
       toast.error("Please provide a rating and comment.");
       setIsSubmitting(false);
       return;
@@ -88,10 +101,12 @@ const Product = () => {
     try {
       const reviewData = {
         rating,
-        comment,
+        comment: comment.trim(),
         userId: user.userId,
         username: user.name.trim(),
+        date: new Date().toISOString(),
       };
+
       await addReview(productData._id, reviewData);
 
       if (!reviewSubmitted) {
@@ -127,9 +142,39 @@ const Product = () => {
     return newTotalRating / newReviewCount;
   };
 
-  useEffect(() => {
-    setReviewSubmitted(false);
-  }, [slug]);
+  const handleToggleReviews = () => {
+    if (showAll) {
+      setVisibleReviews(3);
+      setShowAll(false);
+    } else {
+      setVisibleReviews(productData?.reviews?.length || 3);
+      setShowAll(true);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Are you sure you want to delete this review?")) return;
+    try {
+      await deleteReview(productData._id, reviewId);
+      toast.success("Review deleted successfully.");
+
+      // Remove review from state
+      const filteredReviews = productData.reviews.filter((r) => r._id !== reviewId);
+      const newReviewCount = filteredReviews.length;
+      const newAverageRating =
+        filteredReviews.reduce((acc, r) => acc + r.rating, 0) / (newReviewCount || 1);
+
+      setProductData({
+        ...productData,
+        reviews: filteredReviews,
+        reviewCount: newReviewCount,
+        averageRating: newAverageRating,
+      });
+    } catch (error) {
+      toast.error("Failed to delete review.");
+      console.error("Delete review error:", error);
+    }
+  };
 
   if (!productData) return <div className="text-center py-20">Loading product...</div>;
 
@@ -281,25 +326,45 @@ const Product = () => {
                 )}
 
                 {productData?.reviews?.length > 0 ? (
-                  productData.reviews.map((review, index) => (
-                    <div key={index} className="border-t pt-4">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{review.username}</p>
-                        <p className="text-xs text-gray-400">{new Date(review.date).toLocaleDateString()}</p>
-                      </div>
-                      <div className="flex gap-1 my-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span
-                            key={star}
-                            className={`text-xl ${star <= review.rating ? "text-yellow-400" : "text-gray-300"}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                      <p>{review.comment}</p>
-                    </div>
-                  ))
+                  <>
+                    {productData.reviews.slice(0, visibleReviews).map((review, index) => {
+                      return (
+                        <div key={review._id || index} className="border-t pt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">{review.username}</p>
+                              <p className="text-xs text-gray-400">
+                                {review.date
+                                  ? new Date(review.date).toLocaleDateString()
+                                  : "Unknown Date"}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-1 my-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span
+                                key={star}
+                                className={`text-xl ${star <= review.rating ? "text-yellow-400" : "text-gray-300"}`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                          <p>{review.comment}</p>
+                        </div>
+                      );
+                    })}
+
+                    {productData.reviews.length > 3 && (
+                      <button
+                        onClick={handleToggleReviews}
+                        className="mt-4 w-32 self-center py-2 bg-gray-200 text-sm rounded hover:bg-gray-300"
+                      >
+                        {showAll ? "Show Less" : "Show More"}
+                      </button>
+                    )}
+                  </>
                 ) : (
                   <p>No reviews yet.</p>
                 )}
@@ -309,7 +374,7 @@ const Product = () => {
         </div>
 
         {productData?.category && (
-          <RelatedProduct category={productData.category} subCategory={productData?.subCategory} />
+          <RelatedProduct category={productData.category} subCategory={productData?.subCategory} currentProductId={productData._id} />
         )}
       </div>
     </section>

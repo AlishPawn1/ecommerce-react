@@ -13,10 +13,11 @@ router.get('/metrics', async (req, res) => {
     ]);
     const totalUsers = await User.countDocuments();
     const totalFeedback = await Contact.countDocuments();
-    const totalPending = await Order.countDocuments({
-      status: { $in: ['Order Placed', 'Processing'] },
-    });
-    const totalComplete = await Order.countDocuments({ status: 'Delivered' });
+    const totalPending = await Order.countDocuments({ status: 'Order Placed' });
+    const totalPacking = await Order.countDocuments({ status: 'Packing' });
+    const totalShipping = await Order.countDocuments({ status: 'Shipping' });
+    const totalOutForDelivery = await Order.countDocuments({ status: 'Out for Delivery' });
+    const totalCompleted = await Order.countDocuments({ status: 'Delivered' });
 
     res.json({
       success: true,
@@ -25,7 +26,10 @@ router.get('/metrics', async (req, res) => {
         totalUsers,
         totalFeedback,
         totalPending,
-        totalComplete,
+        totalPacking,
+        totalShipping,
+        totalOutForDelivery,
+        totalCompleted,
       },
     });
   } catch (error) {

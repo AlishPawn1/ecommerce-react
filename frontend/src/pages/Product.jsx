@@ -385,26 +385,28 @@ const Product = () => {
                           placeholder="Write your review here..."
                         ></textarea>
                       </div>
-                      <button
-                        type="submit"
-                        className="w-32 cursor-pointer py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? "Submitting..." : editingReviewId ? "Update Review" : "Submit Review"}
-                      </button>
-                      {editingReviewId && (
+                      <div className="flex gap-2">
                         <button
-                          type="button"
-                          onClick={() => {
-                            setEditingReviewId(null);
-                            setRating(0);
-                            setComment("");
-                          }}
-                          className="w-32 cursor-pointer py-2 mt-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                          type="submit"
+                          className="w-32 cursor-pointer py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                          disabled={isSubmitting}
                         >
-                          Cancel Edit
+                          {isSubmitting ? "Submitting..." : editingReviewId ? "Update Review" : "Submit Review"}
                         </button>
-                      )}
+                        {editingReviewId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingReviewId(null);
+                              setRating(0);
+                              setComment("");
+                            }}
+                            className="w-32 cursor-pointer py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+                          >
+                            Cancel Edit
+                          </button>
+                        )}
+                      </div>
                     </form>
                   ) : (
                     <p className="text-gray-600">

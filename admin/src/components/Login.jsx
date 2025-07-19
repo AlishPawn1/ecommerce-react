@@ -56,7 +56,7 @@ const Login = ({ setToken }) => {
               required
             />
           </div>
-          <button className='mt-2 w-full py-2 px-4 rounded-md text-white bg-black' type='submit'>
+          <button className='mt-2 w-full py-2 px-4 rounded-md cursor-pointer text-white bg-black' type='submit'>
             Login
           </button>
         </form>

@@ -100,7 +100,7 @@ const Order = () => {
                                         <div className="flex items-start gap-6 text-sm">
                                             <img
                                                 src={productData?.image?.[0]}
-                                                className="w-16 sm:w-20"
+                                                className="w-16 h-22 object-cover object-top sm:w-20"
                                                 alt={productData?.name || 'Product'}
                                             />
                                             <div>

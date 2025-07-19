@@ -227,7 +227,8 @@ const adminLogin = async (req, res) => {
     if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     }
-    const token = jwt.sign({ email }, process.env.JWT_SECRET);
+    // Include both email and password in the token payload for adminAuth middleware
+    const token = jwt.sign({ email, password }, process.env.JWT_SECRET);
     console.log('Generated token:', token);
     res.status(200).json({ success: true, token });
   } catch (error) {

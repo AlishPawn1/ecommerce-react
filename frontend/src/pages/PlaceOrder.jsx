@@ -95,6 +95,7 @@ const PlaceOrder = () => {
 
           if (response.data.success) {
             setCartItems({});
+            toast.success("Order placed successfully using Cash on Delivery!");
             navigate("/order");
           } else {
             toast.error(response.data.message);

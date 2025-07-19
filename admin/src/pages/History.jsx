@@ -170,7 +170,7 @@ const History = () => {
                                     <tbody>
                                         {currentOrders.map((order, index) => (
                                             <tr key={order.order_id}>
-                                                <td>{indexOfFirstOrder + index + 1}</td> {/* Serial number */}
+                                                <td>{indexOfFirstOrder + index + 1}</td>
                                                 <td>{order.user_name}</td>
                                                 <td>{order.product_name}</td>
                                                 <td>Rs. {order.amount_due.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>

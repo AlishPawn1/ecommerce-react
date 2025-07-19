@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../App";
+import { ShopContext } from "../context/ShopContext";
+import { toast } from 'react-toastify';
 
 const PaymentReturn = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [statusMessage, setStatusMessage] = useState("Verifying payment...");
+  const { setCartItems } = useContext(ShopContext);
 
   useEffect(() => {
     const query = new URLSearchParams(location.search);
@@ -14,7 +16,8 @@ const PaymentReturn = () => {
     const purchase_order_id = query.get("purchase_order_id");
 
     if (!pidx || !purchase_order_id) {
-      setStatusMessage("Missing payment details.");
+      toast.error("Missing payment details.");
+      navigate('/order');
       return;
     }
 
@@ -26,31 +29,29 @@ const PaymentReturn = () => {
         );
 
         if (res.data.success) {
-          setStatusMessage("✅ Payment Successful! Thank you for your order.");
-          setTimeout(() => {
-            navigate(`/order-success?orderId=${purchase_order_id}`);
-          }, 3000);
+          setCartItems({});
+          toast.success("Payment verified successfully");
+          navigate('/order');
         } else {
-          setStatusMessage("❌ Payment verification failed.");
-          setTimeout(() => {
-            navigate(`/payment-failed?orderId=${purchase_order_id}`);
-          }, 3000);
+          toast.error("Payment verification failed");
+          navigate('/cart');
         }
       } catch (error) {
-        setStatusMessage("❌ Error verifying payment. Please contact support.");
-        console.error("Payment verification error:", error);
+        toast.error("Error verifying payment. Please contact support.");
+        navigate('/cart');
       }
     };
 
     verifyPayment();
-  }, [location.search, navigate]);
+  }, [location.search, navigate, setCartItems]);
 
   return (
-    <section>
-      <div className="container" style={{ textAlign: "center" }}>
-        <h2>{statusMessage}</h2>
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-4">Processing Payment...</h2>
+        <p>Please wait while we verify your payment</p>
       </div>
-    </section>
+    </div>
   );
 };
 

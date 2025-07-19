@@ -225,6 +225,17 @@ const singleProduct = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
+    // Ensure all review.user fields are strings
+    if (product.reviews && Array.isArray(product.reviews)) {
+      product.reviews = product.reviews.map(r => {
+        const reviewObj = typeof r.toObject === 'function' ? r.toObject() : r;
+        return {
+          ...reviewObj,
+          user: reviewObj.user ? reviewObj.user.toString() : "",
+        };
+      });
+    }
+
     res.status(200).json({
       success: true,
       product: product,
@@ -629,37 +640,123 @@ const incrementViewCount = async (req, res) => {
 
 const addReview = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { rating, comment, userId, username } = req.body;
-    if (!rating || !comment || !userId || !username) {
-      return res.status(400).json({ success: false, message: 'Rating, comment, userId, and username are required' });
+    const { id } = req.params; // product ID
+    const { rating, comment, _id } = req.body; // Include _id for explicit updates
+    const userId = req.user.id; // Injected by auth middleware
+    const username = req.user.name;
+
+    // Basic validation
+    if (!rating || !comment) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Rating and comment are required." });
     }
     if (rating < 1 || rating > 5) {
-      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Rating must be between 1 and 5." });
     }
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ success: false, message: 'Invalid product or user ID' });
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID." });
     }
+
+    // Ensure user exists
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
     }
+
+    // Load product
     const product = await productModel.findById(id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
     }
+
+    // Check for existing review by this user
+    const existingReview = product.reviews.find((r) => r.user.toString() === userId.toString());
+
+    if (existingReview && !_id) {
+      // If trying to add a new review but one exists, and not in edit mode
+      return res.status(400).json({
+        success: false,
+        message: "You have already submitted a review for this product. Please edit or delete your existing review.",
+      });
+    }
+
+    if (_id && existingReview && existingReview._id.toString() === _id.toString()) {
+      // Update existing review
+      existingReview.rating = rating;
+      existingReview.comment = comment.trim();
+      existingReview.date = new Date();
+      await product.save();
+      return res.json({
+        success: true,
+        message: "Review updated successfully.",
+        review: existingReview,
+      });
+    } else if (_id) {
+      // If _id is provided but doesn't match user's review
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit your own review.",
+      });
+    }
+
+    // Otherwise push a new one
     product.reviews.push({
-      user: new mongoose.Types.ObjectId(userId),
+      user:     new mongoose.Types.ObjectId(userId),
       username,
       rating,
-      comment,
-      date: new Date(),
+      comment:  comment.trim(),
+      date:     new Date()
     });
+
+    // Update review count and average rating
+    product.reviewCount = product.reviews.length;
+    product.averageRating =
+      product.reviews.reduce((acc, r) => acc + r.rating, 0) / (product.reviews.length || 1);
+
     await product.save();
-    res.json({ success: true, message: 'Review added successfully' });
+    return res.json({ success: true, message: "Review added successfully." });
   } catch (error) {
-    console.error('Error adding review:', error);
-    res.status(500).json({ success: false, message: 'Error adding review', error: error.message });
+    console.error("Error in addReview:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error.", error: error.message });
+  }
+};
+
+// Delete a review
+const deleteReview = async (req, res) => {
+  try {
+    const { productId, reviewId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(reviewId)) {
+      return res.status(400).json({ success: false, message: 'Invalid product or review ID.' });
+    }
+
+    const product = await productModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    const reviewIndex = product.reviews.findIndex(r => r._id.toString() === reviewId);
+    if (reviewIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Review not found.' });
+    }
+
+    product.reviews.splice(reviewIndex, 1);
+    await product.save();
+
+    res.json({ success: true, message: 'Review deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({ success: false, message: 'Server error.', error: error.message });
   }
 };
 
@@ -779,4 +876,5 @@ export {
   addReview,
   getTopProducts,
   updateProduct,
+  deleteReview,
 };

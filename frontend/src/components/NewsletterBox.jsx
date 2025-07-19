@@ -1,52 +1,55 @@
-// src/components/NewsletterBox.jsx
 import React, { useState } from 'react';
-import { backendUrl } from '../App'; // adjust the import path as needed
+import { toast } from 'react-toastify';
+import { backendUrl } from '../App';
+
+const handleSubscribe = async (email) => {
+  const res = await fetch(`${backendUrl}/api/subscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  if (!data.success && data.error === 'Invalid email address') throw new Error(data.error);
+  if (!data.success && data.error) throw new Error(data.error);
+  if (data.message && data.message.toLowerCase().includes('already subscribed')) {
+    throw new Error('already-subscribed');
+  }
+};
 
 const NewsletterBox = () => {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setStatus(null);
+    setErrorMsg('');
 
-    if (!email.trim()) return;
-
-    if (!backendUrl) {
-      console.error('backendUrl is not defined');
-      setErrorMsg('Backend URL not set.');
+    if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
       setStatus('error');
+      setErrorMsg('Please enter a valid email address.');
+      toast.error('Please enter a valid email address.');
       return;
     }
 
     setStatus('loading');
-    setErrorMsg('');
-
     try {
-
-      const res = await fetch(`${backendUrl}/api/subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Subscription failed:', errorData);
-        setErrorMsg(errorData.error || 'Subscription failed');
-        setStatus('error');
-        return;
-      }
-
-      const data = await res.json();
-    //   console.log('Subscription success:', data);
-
+      await handleSubscribe(email);
       setStatus('success');
       setEmail('');
-    } catch (error) {
-      console.error('Subscription request error:', error);
-      setErrorMsg('Something went wrong. Please try again.');
+      toast.success('Thank you for subscribing!');
+    } catch (err) {
+      if (err.message === 'already-subscribed') {
+        setStatus('success');
+        setEmail('');
+        setErrorMsg('');
+        toast.info('This email is already subscribed.');
+        return;
+      }
       setStatus('error');
+      setErrorMsg(err.message || 'Subscription failed. Please try again.');
+      toast.error(err.message || 'Subscription failed. Please try again.');
     }
   };
 
@@ -69,25 +72,20 @@ const NewsletterBox = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full sm:flex-1 outline-none py-2 px-3 "
+            aria-label="Email address"
           />
           <button
             type="submit"
             disabled={status === 'loading'}
             className="bg-black text-white text-xs px-10 py-3 uppercase cursor-pointer rounded-r hover:bg-gray-800 transition"
+            aria-disabled={status === 'loading'}
           >
             {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
           </button>
         </form>
-
-        {status === 'success' && (
-          <p className="text-green-600 mt-2">Thank you for subscribing!</p>
-        )}
-        {status === 'error' && (
-          <p className="text-red-600 mt-2">{errorMsg || 'Subscription failed.'}</p>
-        )}
       </div>
     </section>
   );
 };
 
-export default NewsletterBox;
+export default NewsletterBox; 

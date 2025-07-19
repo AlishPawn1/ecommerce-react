@@ -15,7 +15,8 @@ const ShopContextProvider = (props) => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [user, setUser] = useState({
     userId: localStorage.getItem('userId') || '',
-    name: localStorage.getItem('name') || '' // Changed to 'name'
+    _id: localStorage.getItem('userId') || '',
+    name: localStorage.getItem('name') || ''
   });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -197,27 +198,50 @@ const ShopContextProvider = (props) => {
   };
 
   const addReview = async (productId, reviewData) => {
-    try {
-      console.log(`Submitting review for product ID: ${productId}`, reviewData);
-      const response = await axios.post(
-        `${backendUrl}/api/product/reviews/${productId}`,
-        // { ...reviewData, username: user.name }, // Changed to user.name
-        { ...reviewData, username: user.name, userId: user._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (response.data.success) {
-        // toast.success('Review submitted successfully!');
-        await getProductData();
-        return response.data;
-      } else {
-        throw new Error(response.data.message);
+  try {
+    const response = await axios.post(
+      `${backendUrl}/api/product/reviews/${productId}`,
+      reviewData,
+      {
+        headers: { Authorization: `Bearer ${token}` },
       }
-    } catch (error) {
-      console.error('Error submitting review:', error.message, error.response?.data);
-      toast.error('Failed to submit review.');
-      throw error;
+    );
+
+    if (response.data.success) {
+      await getProductData(); // Optional: reload product
+      return response.data;
+    } else {
+      throw new Error(response.data.message);
     }
-  };
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    toast.error('Failed to submit review.');
+    throw error;
+  }
+};
+
+  const deleteReview = async (productId, reviewId) => {
+  try {
+    const response = await axios.delete(
+      `${backendUrl}/api/product/reviews/${productId}/${reviewId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (response.data.success) {
+      toast.success('Review deleted successfully.');
+      await getProductData(); // Optionally refresh products
+      return response.data;
+    } else {
+      throw new Error(response.data.message);
+    }
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    toast.error('Failed to delete review.');
+    throw error;
+  }
+};
+
 
   const fetchTopProducts = async (sortBy) => {
     try {
@@ -239,7 +263,7 @@ const ShopContextProvider = (props) => {
     localStorage.removeItem('userId');
     localStorage.removeItem('name'); // Changed to 'name'
     setToken('');
-    setUser({ userId: '', name: '' });
+    setUser({ userId: '', _id: '', name: '' });
     setCartItems({});
     navigate('/login');
   };
@@ -252,7 +276,7 @@ const ShopContextProvider = (props) => {
 
     if (storedToken) {
       setToken(storedToken);
-      setUser({ userId: storedUserId || '', name: storedName || '' });
+      setUser({ userId: storedUserId || '', _id: storedUserId || '', name: storedName || '' });
       getUserCart().catch((error) => {
         if (error.response?.status === 401) {
           handleLogout();
@@ -284,6 +308,7 @@ const ShopContextProvider = (props) => {
     loading,
     incrementViewCount,
     addReview,
+    deleteReview,
     fetchTopProducts
   };
 

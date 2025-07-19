@@ -18,7 +18,9 @@ import {
   removesubCategory,
   getSinglesubCategory,
   updatesubCategory,
-  updateProduct, // Add the new controller
+  updateProduct,
+  addReview,
+  deleteReview,
 } from '../controllers/productControllers.js';
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
@@ -77,14 +79,8 @@ productRouter.get('/subcategories/:id', getSinglesubCategory);
 productRouter.put('/subcategories/:id', adminAuth, updatesubCategory);
 
 // Reviews
-productRouter.post('/reviews/:id', auth, async (req, res) => {
-  try {
-    const { addReview } = await import('../controllers/productControllers.js');
-    await addReview(req, res);
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
+productRouter.post('/reviews/:id', auth, addReview);
+productRouter.delete('/reviews/:productId/:reviewId', deleteReview);
 
 // View Count
 productRouter.post('/view/:id', async (req, res) => {

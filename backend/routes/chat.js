@@ -9,25 +9,32 @@ chatRoute.post('/', async (req, res) => {
 
   console.log('💬 Received:', lower);
 
-  try {
-    // Try to find product by name or description
-    const product = await Product.findOne({
-      $or: [
-        { name: { $regex: lower, $options: 'i' } },
-        { description: { $regex: lower, $options: 'i' } }
-      ]
-    });
+  // Greeting detection
+  const greetings = ['hi', 'hello', 'hey', 'good morning', 'good evening'];
+  if (greetings.some(greet => lower.startsWith(greet))) {
+    return res.json({ reply: "Hello! How can I assist you today?" });
+  }
 
-    if (product) {
-      return res.json({
-        reply: `Yes, we have "${product.name}". Price: Rs.${product.price}`,
-        product: {
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          image: product.image?.[0] || '',
-        }
+  try {
+    // Try to find product by name or description ONLY if the message looks like a product query
+    if (lower.includes('have') || lower.includes('show') || lower.includes('product') || lower.includes('price') || lower.includes('buy')) {
+      const product = await Product.findOne({
+        $or: [
+          { name: { $regex: lower, $options: 'i' } },
+          { description: { $regex: lower, $options: 'i' } }
+        ]
       });
+      if (product) {
+        return res.json({
+          reply: `Yes, we have "${product.name}". Price: Rs.${product.price}`,
+          product: {
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            image: product.image?.[0] || '',
+          }
+        });
+      }
     }
 
     // Popular products suggestion

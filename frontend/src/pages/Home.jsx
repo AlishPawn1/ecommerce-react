@@ -3,11 +3,11 @@ import Hero from '../components/Hero'
 import LatestCollection from '../components/LatestCollection'
 import BestSeller from '../components/BestSeller'
 import OurPolicy from '../components/OurPolicy'
-import NewlettterBox from '../components/NewlettterBox'
 import BannerSlider from '../components/BannerSlider'
 import DealSection from '../components/DealSection'
 import TopProducts from '../components/TopProducts'
 import TopRated from '../components/TopRated'
+import NewsletterBox from '../components/NewsletterBox'
 
 const Home = () => {
     return (
@@ -20,7 +20,7 @@ const Home = () => {
             <Hero/>
             <BestSeller/>
             <TopProducts/>
-            <NewlettterBox/>
+            <NewsletterBox/>
         </main>
     )
 }

@@ -23,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 const frontendUrls = [
   'https://newari-traditional-shop.vercel.app',
+  'https://frontend-9h9d5yjpi-alishpawn1s-projects.vercel.app',
+  'https://newari-traditional-admin.vercel.app',
+  'https://admin-9vyo55tqd-alishpawn1s-projects.vercel.app',
   'https://admin-c9qij4b6x-alishpawn1s-projects.vercel.app',
   // Add more URLs as needed
   ...(process.env.FRONTEND_URLS || '')

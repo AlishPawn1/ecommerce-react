@@ -17,21 +17,18 @@ import newsletterRoute from './routes/newsletterRoute.js';
 
 const app = express();
 
-// Middleware
+// Body parsers
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const frontendUrls = [
-  'https://newari-traditional-shop.vercel.app',
-  'https://admin-c9qij4b6x-alishpawn1s-projects.vercel.app',
-  // Add more URLs as needed
-  ...(process.env.FRONTEND_URLS || '')
-    .split(',')
-    .map(url => url.trim().replace(/\/+$/, ''))
-    .filter(Boolean)
-];
+// Parse allowed frontend URLs from .env
+const frontendUrls = (process.env.FRONTEND_URLS || '')
+  .split(',')
+  .map(url => url.trim().replace(/\/+$/, '')) // Remove trailing slashes
+  .filter(Boolean);
 
-app.use(cors({
+// CORS middleware
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || frontendUrls.includes(origin)) {
       callback(null, origin || true);
@@ -41,9 +38,13 @@ app.use(cors({
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+  credentials: true
+};
 
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Optional: handle preflight
+
+// Logging middleware for CORS debug
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
   next();
@@ -59,18 +60,19 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/chat', chatRoute);
 app.use('/api/subscribe', subscribeRoute);
 app.use('/api/newsletter', newsletterRoute);
-app.use('/api/messages', messageRoute); 
-// Status checks
+app.use('/api/messages', messageRoute);
+
+// Health check routes
 app.get('/', (req, res) => res.status(200).send('Server is running!'));
 app.get('/api', (req, res) => res.status(200).json({ message: 'API Working' }));
 
-// Error handler
+// Global error handler
 app.use((err, req, res, next) => {
   console.error('Server Error:', err.stack);
   res.status(500).json({ success: false, message: 'Server error' });
 });
 
-// Start server
+// Start server after initializing services
 let initialized = false;
 async function initializeServices() {
   if (initialized) return;
@@ -84,7 +86,7 @@ const PORT = process.env.PORT || 4000;
 initializeServices()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
   })
   .catch((error) => {

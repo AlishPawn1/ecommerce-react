@@ -20,8 +20,8 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=0 /app/dist /usr/share/nginx/html
 
-# Expose port
-EXPOSE 5173
+# Expose port (change if your admin runs on a different port)
+EXPOSE 5174
 
 # Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;"] 

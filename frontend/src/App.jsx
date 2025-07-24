@@ -21,7 +21,7 @@ import NotFound from './pages/NotFound'
 import ScrollToTop from './components/ScrollToTop'
 import ProfileCard from './pages/ProfileCard'
 import ChatBot from './components/ChatBot'
-import PrivacyPolicy from './pages/PrivacyPolicy'
+import InfoPolicy from './pages/InfoPolicy';
 import ResetPassword from './components/ResetPassword'
 import PaymentReturn from './pages/PaymentReturn'
 import PaymentFailed from './pages/PaymentFailed'
@@ -50,7 +50,7 @@ const App = () => {
         <Route path="/order" element={<Order/>}/>
         <Route path="/payment-verify" element={<Verify/>}/>
         <Route path='/profile' element={<ProfileCard />}/>
-        <Route path='/privacy-policy' element={<PrivacyPolicy />}/>
+        <Route path='/info-policy' element={<InfoPolicy />} />
         <Route path='/reset-password' element={<ResetPassword />}/>
         <Route path="/payment-return" element={<PaymentReturn />} />
         <Route path="/payment-failed" element={<PaymentFailed />} />

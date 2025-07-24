@@ -1,10 +1,56 @@
 # Ecommerce React Project
 
-A full-stack e-commerce platform featuring a customer-facing shop, an admin dashboard, and a Node.js/Express backend with MongoDB. The project is organized into three main apps:
+## Quick Start with Docker Compose
 
-- **frontend/**: Customer-facing React shop
-- **admin/**: Admin dashboard for managing products, orders, users, and more
-- **backend/**: Node.js/Express REST API with MongoDB
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
+
+### Running All Services
+
+1. **Clone the repository:**
+   ```sh
+   git clone <your-repo-url>
+   cd <your-project-folder>
+   ```
+
+2. **Start all services with Docker Compose:**
+   ```sh
+   docker-compose up --build
+   ```
+   This will build and run the backend, frontend, and admin containers.
+
+3. **Access the apps:**
+   - Backend: [http://localhost:4000](http://localhost:4000)
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Admin: [http://localhost:5174](http://localhost:5174)
+
+4. **To stop all containers:**
+   ```sh
+   docker-compose down
+   ```
+
+---
+
+## Manual Docker Commands (Optional)
+
+If you want to build and run each service separately:
+
+```sh
+docker build -t backend-panel ./backend
+docker build -t frontend-panel ./frontend
+docker build -t admin-panel ./admin
+
+docker run -d -p 4000:4000 --name backend-panel backend-panel
+docker run -d -p 3000:3000 --name frontend-panel frontend-panel
+docker run -d -p 5174:5174 --name admin-panel admin-panel
+```
+
+---
+
+## Notes
+- Make sure your `.env` files (if any) are present and configured for each service.
+- If you use a database, you may want to add a database service to `docker-compose.yml`.
+- For production, consider setting up volumes and environment variables as needed.
 
 ---
 

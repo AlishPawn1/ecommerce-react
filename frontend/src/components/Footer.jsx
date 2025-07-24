@@ -23,7 +23,7 @@ const Footer = () => {
                         <li><Link to='/'>Home</Link></li>
                         {/* <li><span onClick={() => navigate('/about')} className='cursor-pointer'>About</span></li> */}
                         <li><Link to='/about'>About Us</Link></li>
-                        <li><Link to='/privacy-policy'>Privacy Policy</Link></li>
+                        <li><Link to='/info-policy'>Privacy Policy</Link></li>
                         <li><Link to='/contact'>Contact</Link></li>
                         <li><Link to='/collection'>Collection</Link></li>
                     </ul>

@@ -1,49 +1,94 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import connectDB from './config/mongodb.js';
+import connectCloudinary from './config/cloudinary.js';
 
-dotenv.config();
+import userRouter from './routes/userRoute.js';
+import productRouter from './routes/productRoute.js';
+import cartRouter from './routes/cartRoute.js';
+import orderRouter from './routes/orderRoute.js';
+import contactRouter from './routes/contactRoute.js';
+import dashboardRouter from './routes/dashboardRoute.js';
+import chatRoute from './routes/chat.js';
+import subscribeRoute from './routes/subscribe.js';
+import messageRoute from './routes/messageRoute.js';
+import newsletterRoute from './routes/newsletterRoute.js';
 
 const app = express();
 
-// Parse allowed frontend URLs from environment variable, trimming trailing slashes and ignoring empty strings
+// Body parsers
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Parse allowed frontend URLs from .env
 const frontendUrls = (process.env.FRONTEND_URLS || '')
   .split(',')
-  .map(url => url.trim().replace(/\/+$/, ''))
+  .map(url => url.trim().replace(/\/+$/, '')) // Remove trailing slashes
   .filter(Boolean);
 
-console.log('Allowed frontend URLs:', frontendUrls);
-
-app.use(cors({
-  origin: function (origin, callback) {
-    console.log('Incoming request origin:', origin);
-    // Allow requests with no origin (like curl, Postman) OR from allowed URLs only
+// CORS middleware
+const corsOptions = {
+  origin: (origin, callback) => {
     if (!origin || frontendUrls.includes(origin)) {
-      callback(null, true);
+      callback(null, origin || true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
 
-app.use(express.json());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Optional: handle preflight
 
-// Example route to test server is running
-app.get('/', (req, res) => {
-  res.send('Newari Traditional Backend is running!');
+// Logging middleware for CORS debug
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
+  next();
 });
 
-// Example API route
-app.get('/api/product/top', (req, res) => {
-  // Example response
-  res.json([
-    { name: "Men’s Newari Waistcoat – Dhaka Fusion", averageRating: 3, reviewCount: 1, score: 3.04 }
-  ]);
+// Routes
+app.use('/api/user', userRouter);
+app.use('/api/product', productRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/order', orderRouter);
+app.use('/api', contactRouter);
+app.use('/api/dashboard', dashboardRouter);
+app.use('/api/chat', chatRoute);
+app.use('/api/subscribe', subscribeRoute);
+app.use('/api/newsletter', newsletterRoute);
+app.use('/api/messages', messageRoute);
+
+// Health check routes
+app.get('/', (req, res) => res.status(200).send('Server is running!'));
+app.get('/api', (req, res) => res.status(200).json({ message: 'API Working' }));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err.stack);
+  res.status(500).json({ success: false, message: 'Server error' });
 });
 
-const PORT = process.env.PORT || 5000;
+// Start server after initializing services
+let initialized = false;
+async function initializeServices() {
+  if (initialized) return;
+  await connectDB();
+  await connectCloudinary();
+  initialized = true;
+  console.log('✅ Services initialized successfully');
+}
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 4000;
+initializeServices()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('❌ Failed to initialize services:', error);
+  });

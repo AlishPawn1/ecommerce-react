@@ -12,7 +12,7 @@ const List = () => {
     const [categories, setCategories] = useState([]);
     const [subCategories, setSubCategories] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const productsPerPage = 10;
+    const productsPerPage = 5;
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 

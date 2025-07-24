@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { backendUrl } from '../App';
 import { useNavigate } from 'react-router-dom'; // Added for redirection
+import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 
 const InsertSubCategory = () => {
   const [subCategories, setSubCategories] = useState([]);
@@ -13,6 +14,19 @@ const InsertSubCategory = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // Initialize navigate
   const token = localStorage.getItem('token'); // Get token
+  const [currentPage, setCurrentPage] = useState(1);
+  const subCategoriesPerPage = 5;
+
+  const paginationBtnStyle = {
+    height: '25px',
+    width: '25px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#000',
+    transition: 'background-color 0.3s',
+    borderRadius: '5px',
+  };
 
   const fetchSubCategories = async () => {
     try {
@@ -118,6 +132,12 @@ const InsertSubCategory = () => {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(subCategories.length / subCategoriesPerPage);
+  const indexOfLast = currentPage * subCategoriesPerPage;
+  const indexOfFirst = indexOfLast - subCategoriesPerPage;
+  const currentSubCategories = subCategories.slice(indexOfFirst, indexOfLast);
+
   if (loading) {
     return (
       <div className="d-flex justify-content-center py-5">
@@ -156,10 +176,10 @@ const InsertSubCategory = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Array.isArray(subCategories) && subCategories.length > 0 ? (
-                      subCategories.map((subcategory, index) => (
+                    {Array.isArray(currentSubCategories) && currentSubCategories.length > 0 ? (
+                      currentSubCategories.map((subcategory, index) => (
                         <tr key={subcategory._id || '-'}>
-                          <td>{index + 1}</td>
+                          <td>{indexOfFirst + index + 1}</td>
                           <td>{subcategory.name || '-'}</td>
                           <td>
                             <div className="d-flex gap-2">
@@ -190,6 +210,70 @@ const InsertSubCategory = () => {
                   </tbody>
                 </table>
               </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <nav className="pagination justify-content-center gap-2 mt-4 mb-2" aria-label="Subcategory pagination">
+                  <button
+                    style={{
+                      ...paginationBtnStyle,
+                      backgroundColor: currentPage === 1 ? '#e0e0e0' : '#000',
+                      color: currentPage === 1 ? '#888' : '#fff',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    }}
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    aria-label="Previous page"
+                    onMouseEnter={e => {
+                      if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+                    }}
+                    onMouseLeave={e => {
+                      if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+                    }}
+                  >
+                    <AiOutlineLeft />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      style={{
+                        ...paginationBtnStyle,
+                        backgroundColor: currentPage === page ? '#000' : '#fff',
+                        color: currentPage === page ? '#fff' : '#000',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => setCurrentPage(page)}
+                      onMouseEnter={e => {
+                        if (currentPage !== page) e.currentTarget.style.backgroundColor = '#ddd';
+                      }}
+                      onMouseLeave={e => {
+                        if (currentPage !== page) e.currentTarget.style.backgroundColor = '#fff';
+                      }}
+                      aria-label={`Go to page ${page}`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    style={{
+                      ...paginationBtnStyle,
+                      backgroundColor: currentPage === totalPages ? '#e0e0e0' : '#000',
+                      color: currentPage === totalPages ? '#888' : '#fff',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                    }}
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    aria-label="Next page"
+                    onMouseEnter={e => {
+                      if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+                    }}
+                    onMouseLeave={e => {
+                      if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+                    }}
+                  >
+                    <AiOutlineRight />
+                  </button>
+                </nav>
+              )}
             </div>
           </div>
         </div>

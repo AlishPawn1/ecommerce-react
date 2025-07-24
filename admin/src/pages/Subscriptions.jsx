@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { backendUrl } from '../App';
+import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
 
 const Subscriptions = () => {
   const [subs, setSubs] = useState([]);
@@ -39,6 +40,17 @@ const Subscriptions = () => {
   const indexOfLast = currentPage * subsPerPage;
   const indexOfFirst = indexOfLast - subsPerPage;
   const currentSubs = filteredSubs.slice(indexOfFirst, indexOfLast);
+
+  const paginationBtnStyle = {
+    height: '25px',
+    width: '25px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#000',
+    transition: 'background-color 0.3s',
+    borderRadius: '5px',
+  };
 
   return (
     <section className="max-w-3xl mx-auto my-10 p-6 bg-white rounded shadow">
@@ -90,31 +102,67 @@ const Subscriptions = () => {
       )}
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
+        <nav className="pagination justify-content-center gap-2 mt-6" aria-label="Subscriptions pagination">
           <button
-            className="px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200 cursor-pointer"
-            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+            style={{
+              ...paginationBtnStyle,
+              backgroundColor: currentPage === 1 ? '#e0e0e0' : '#000',
+              color: currentPage === 1 ? '#888' : '#fff',
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            }}
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
+            aria-label="Previous page"
+            onMouseEnter={e => {
+              if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+            }}
+            onMouseLeave={e => {
+              if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+            }}
           >
-            Prev
+            <AiOutlineLeft />
           </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
             <button
               key={page}
-              className={`px-3 py-1 rounded border ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'} cursor-pointer`}
+              style={{
+                ...paginationBtnStyle,
+                backgroundColor: currentPage === page ? '#000' : '#fff',
+                color: currentPage === page ? '#fff' : '#000',
+                cursor: 'pointer',
+              }}
               onClick={() => setCurrentPage(page)}
+              onMouseEnter={e => {
+                if (currentPage !== page) e.currentTarget.style.backgroundColor = '#ddd';
+              }}
+              onMouseLeave={e => {
+                if (currentPage !== page) e.currentTarget.style.backgroundColor = '#fff';
+              }}
+              aria-label={`Go to page ${page}`}
             >
               {page}
             </button>
           ))}
           <button
-            className="px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200 cursor-pointer"
-            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+            style={{
+              ...paginationBtnStyle,
+              backgroundColor: currentPage === totalPages ? '#e0e0e0' : '#000',
+              color: currentPage === totalPages ? '#888' : '#fff',
+              cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+            }}
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
+            aria-label="Next page"
+            onMouseEnter={e => {
+              if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+            }}
+            onMouseLeave={e => {
+              if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+            }}
           >
-            Next
+            <AiOutlineRight />
           </button>
-        </div>
+        </nav>
       )}
     </section>
   );

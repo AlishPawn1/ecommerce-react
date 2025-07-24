@@ -3,14 +3,17 @@ import React, { useState } from 'react';
 import { backendUrl } from '../App';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from './LoadingSpinner';
 
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(`${backendUrl}/api/user/admin`, { email, password });
 
@@ -26,6 +29,8 @@ const Login = ({ setToken }) => {
     } catch (error) {
       console.error('Login Error:', error.response?.data || error);
       toast.error(error.response?.data?.message || 'Login failed.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,8 +61,8 @@ const Login = ({ setToken }) => {
               required
             />
           </div>
-          <button className='mt-2 w-full py-2 px-4 rounded-md cursor-pointer text-white bg-black' type='submit'>
-            Login
+          <button className='mt-2 w-full py-2 px-4 rounded-md cursor-pointer text-white bg-black disabled:opacity-60' type='submit' disabled={loading}>
+            {loading ? <LoadingSpinner size="sm" color="primary" /> : 'Login'}
           </button>
         </form>
       </div>

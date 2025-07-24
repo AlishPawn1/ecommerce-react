@@ -117,7 +117,7 @@ ecommerce-react/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/ecommerce-react.git
+git clone https://github.com/alishpawn1/ecommerce-react.git
 cd ecommerce-react
 ```
 

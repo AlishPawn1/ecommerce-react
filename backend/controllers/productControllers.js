@@ -818,7 +818,7 @@ const getTopProducts = async (req, res) => {
     const totalReviewCount = allProducts.reduce((sum, p) => sum + p.reviewCount, 0);
     const C = totalReviewCount ? totalRatingSum / totalReviewCount : 0;
 
-    const m = 5; // minimum reviews threshold, adjust as needed
+    const m = 5;
 
     // Fetch products for sorting
     let products = await productModel.find().lean();

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form>
+        <input type="email" id="emailInput" placeholder="email">
+        <input type="submit" value="Submit">
+    </form>
+
+    <p id="result"></p>
+
+    <script>
+        document.addEventListener('submit', e => {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+
+            const [name, domain] = email.split('@');
+            const maskedfirst = name.slice(0, 3) ;
+            const maskedMiddle= '*'.repeat(name.length);
+            const maskedlast = name.slice(-2);
+
+            const maskedEmail = `${maskedfirst}${maskedMiddle}${maskedlast}@${domain}`;
+
+            document.getElementById('result').textContent = maskedEmail;
+        })
+    </script>
+</body>
+</html>

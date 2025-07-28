@@ -41,6 +41,12 @@ const Sidebar = () => {
             <span className="hidden md:block">History</span>
           </NavLink>
         </li>
+        <li>
+          <NavLink to="/reviews">
+            <i className="fa-solid fa-star"></i>
+            <span className="hidden md:block">Reviews</span>
+          </NavLink>
+        </li>
         {/* Dropdown Menu */}
         <li className="relative">
           <button onClick={() => toggleDropdown("insert")} >

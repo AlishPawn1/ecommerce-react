@@ -12,7 +12,6 @@ import contactRouter from './routes/contactRoute.js';
 import dashboardRouter from './routes/dashboardRoute.js';
 import chatRoute from './routes/chat.js';
 import subscribeRoute from './routes/subscribe.js';
-import messageRoute from './routes/messageRoute.js';
 import newsletterRoute from './routes/newsletterRoute.js';
 
 const app = express();
@@ -60,7 +59,6 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/chat', chatRoute);
 app.use('/api/subscribe', subscribeRoute);
 app.use('/api/newsletter', newsletterRoute);
-app.use('/api/messages', messageRoute);
 
 // Health check routes
 app.get('/', (req, res) => res.status(200).send('Server is running!'));

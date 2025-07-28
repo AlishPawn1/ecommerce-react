@@ -57,7 +57,7 @@ const App = () => {
         <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <ChatBot/>
+      {/* <ChatBot/> */}
       <Footer />
     </div>
   )

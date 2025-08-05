@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
   admin:
     build: ./admin
+    
     ports:
       - "5174:5174"
     restart: unless-stopped

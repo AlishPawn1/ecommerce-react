@@ -121,7 +121,9 @@ const Product = () => {
 
     // Prevent multiple reviews: only allow if not reviewed or editing
     if (hasUserReviewed() && !editingReviewId) {
-      toast.error("You have already submitted a review. Edit or delete your existing review.");
+      toast.error(
+        "You have already submitted a review. Edit or delete your existing review.",
+      );
       setIsSubmitting(false);
       return;
     }
@@ -210,14 +212,17 @@ const Product = () => {
       await deleteReview(productData._id, reviewId);
       // No toast here; handled in context
       // Update state by removing deleted review
-      const filteredReviews = productData.reviews.filter((r) => r._id !== reviewId);
+      const filteredReviews = productData.reviews.filter(
+        (r) => r._id !== reviewId,
+      );
       setProductData({
         ...productData,
         reviews: filteredReviews,
         reviewCount: filteredReviews.length,
         averageRating:
           filteredReviews.length > 0
-            ? filteredReviews.reduce((acc, r) => acc + r.rating, 0) / filteredReviews.length
+            ? filteredReviews.reduce((acc, r) => acc + r.rating, 0) /
+              filteredReviews.length
             : 0,
       });
       setMenuOpenId(null);
@@ -238,7 +243,8 @@ const Product = () => {
     }
   };
 
-  if (!productData) return <div className="text-center py-20">Loading product...</div>;
+  if (!productData)
+    return <div className="text-center py-20">Loading product...</div>;
 
   return (
     <section className="product-detail-section">
@@ -272,17 +278,22 @@ const Product = () => {
             </div>
 
             <div className="flex-1">
-              <h1 className="text-2xl font-medium">{productData?.name || "Unknown Product"}</h1>
+              <h1 className="text-2xl font-medium">
+                {productData?.name || "Unknown Product"}
+              </h1>
               <p className="text-xl font-semibold mt-4">
                 {currency}
                 {productData?.price || "N/A"}
               </p>
               <div className="flex items-center gap-2 mt-2">
                 <p className="text-gray-600">
-                  {productData?.averageRating?.toFixed(1)} ({productData?.reviewCount} reviews)
+                  {productData?.averageRating?.toFixed(1)} (
+                  {productData?.reviewCount} reviews)
                 </p>
               </div>
-              <p className="text-gray-600 mt-2">{productData?.description || "No description available."}</p>
+              <p className="text-gray-600 mt-2">
+                {productData?.description || "No description available."}
+              </p>
 
               {productData?.size?.length > 0 && (
                 <div className="flex flex-col gap-4 my-8">
@@ -295,7 +306,9 @@ const Product = () => {
                         className={`border py-2 px-4 bg-gray-100 ${
                           item === size ? "border-orange-500" : ""
                         } ${
-                          productData?.stock <= 0 || !token ? "opacity-50 cursor-not-allowed" : ""
+                          productData?.stock <= 0 || !token
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
                         }`}
                         disabled={productData?.stock <= 0 || !token}
                       >
@@ -309,7 +322,9 @@ const Product = () => {
               <button
                 onClick={handleAddToCart}
                 className={`bg-black text-white px-8 py-3 text-sm uppercase active:bg-gray-700 ${
-                  productData?.stock <= 0 || !size || !token ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                  productData?.stock <= 0 || !size || !token
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
                 }`}
                 disabled={productData?.stock <= 0 || !size || !token}
                 title={!token ? "Please log in to add to cart" : ""}
@@ -317,8 +332,8 @@ const Product = () => {
                 {productData?.stock <= 0
                   ? "Out of Stock"
                   : !token
-                  ? "Login to Add to Cart"
-                  : "Add to Cart"}
+                    ? "Login to Add to Cart"
+                    : "Add to Cart"}
               </button>
 
               <hr className="mt-8 sm:w-4/5" />
@@ -350,7 +365,9 @@ const Product = () => {
           <div className="border p-6 text-sm text-gray-500">
             {activeTab === "description" && (
               <div className="flex flex-col gap-4">
-                {productData?.additionalDescription && <p>{productData?.additionalDescription}</p>}
+                {productData?.additionalDescription && (
+                  <p>{productData?.additionalDescription}</p>
+                )}
               </div>
             )}
 
@@ -358,7 +375,11 @@ const Product = () => {
               <div className="flex flex-col gap-6">
                 {token ? (
                   !hasUserReviewed() || editingReviewId ? (
-                    <form onSubmit={handleAddReview} method="post" className="flex flex-col gap-4">
+                    <form
+                      onSubmit={handleAddReview}
+                      method="post"
+                      className="flex flex-col gap-4"
+                    >
                       <div>
                         <p className="mb-2">Your Rating</p>
                         <div className="flex gap-1">
@@ -366,7 +387,9 @@ const Product = () => {
                             <span
                               key={star}
                               className={`cursor-pointer text-2xl ${
-                                star <= rating ? "text-yellow-400" : "text-gray-300"
+                                star <= rating
+                                  ? "text-yellow-400"
+                                  : "text-gray-300"
                               }`}
                               onClick={() => setRating(star)}
                             >
@@ -376,7 +399,9 @@ const Product = () => {
                         </div>
                       </div>
                       <div>
-                        <p className="mb-2">{editingReviewId ? "Edit Your Review" : "Your Review"}</p>
+                        <p className="mb-2">
+                          {editingReviewId ? "Edit Your Review" : "Your Review"}
+                        </p>
                         <textarea
                           className="w-full px-3 py-2 border rounded-lg"
                           rows="4"
@@ -391,7 +416,11 @@ const Product = () => {
                           className="w-32 cursor-pointer py-2 bg-black text-white rounded-lg hover:bg-gray-800"
                           disabled={isSubmitting}
                         >
-                          {isSubmitting ? "Submitting..." : editingReviewId ? "Update Review" : "Submit Review"}
+                          {isSubmitting
+                            ? "Submitting..."
+                            : editingReviewId
+                              ? "Update Review"
+                              : "Submit Review"}
                         </button>
                         {editingReviewId && (
                           <button
@@ -410,7 +439,8 @@ const Product = () => {
                     </form>
                   ) : (
                     <p className="text-gray-600">
-                      You have already submitted a review. Use the three-dot menu on your review to edit or delete it.
+                      You have already submitted a review. Use the three-dot
+                      menu on your review to edit or delete it.
                     </p>
                   )
                 ) : (
@@ -419,71 +449,89 @@ const Product = () => {
 
                 {productData?.reviews?.length > 0 ? (
                   <>
-                    {productData.reviews.slice(0, visibleReviews).map((review, index) => {
-                      console.log(
-                        'Review:', review,
-                        'review.user:', review.user,
-                        'Current user._id:', user && user._id,
-                        'isReviewOwner:', isReviewOwner(review.user)
-                      );
-                      return (
-                        <div key={review._id || index} className="border-t pt-4 relative">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium">{review.username}</p>
-                              <p className="text-xs text-gray-400">
-                                {review.date
-                                  ? new Date(review.date).toLocaleDateString()
-                                  : "Unknown Date"}
-                              </p>
+                    {productData.reviews
+                      .slice(0, visibleReviews)
+                      .map((review, index) => {
+                        console.log(
+                          "Review:",
+                          review,
+                          "review.user:",
+                          review.user,
+                          "Current user._id:",
+                          user && user._id,
+                          "isReviewOwner:",
+                          isReviewOwner(review.user),
+                        );
+                        return (
+                          <div
+                            key={review._id || index}
+                            className="border-t pt-4 relative"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium">{review.username}</p>
+                                <p className="text-xs text-gray-400">
+                                  {review.date
+                                    ? new Date(review.date).toLocaleDateString()
+                                    : "Unknown Date"}
+                                </p>
+                              </div>
+
+                              {isReviewOwner(review.user) && (
+                                <div className="relative" ref={menuRef}>
+                                  <button
+                                    onClick={() =>
+                                      setMenuOpenId(
+                                        menuOpenId === review._id
+                                          ? null
+                                          : review._id,
+                                      )
+                                    }
+                                    className="text-gray-600 hover:text-gray-900"
+                                    aria-label="Review actions"
+                                  >
+                                    ⋮
+                                  </button>
+                                  {menuOpenId === review._id && (
+                                    <div className="absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-md z-10">
+                                      <button
+                                        onClick={() => handleEditClick(review)}
+                                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          handleDeleteReviewMenu(review._id)
+                                        }
+                                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-100"
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
 
-                            {isReviewOwner(review.user) && (
-                              <div className="relative" ref={menuRef}>
-                                <button
-                                  onClick={() => setMenuOpenId(menuOpenId === review._id ? null : review._id)}
-                                  className="text-gray-600 hover:text-gray-900"
-                                  aria-label="Review actions"
+                            <div className="flex gap-1 my-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                  key={star}
+                                  className={`text-xl ${
+                                    star <= review.rating
+                                      ? "text-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
                                 >
-                                  ⋮
-                                </button>
-                                {menuOpenId === review._id && (
-                                  <div className="absolute right-0 mt-2 w-28 bg-white border border-gray-300 rounded shadow-md z-10">
-                                    <button
-                                      onClick={() => handleEditClick(review)}
-                                      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteReviewMenu(review._id)}
-                                      className="block w-full px-4 py-2 text-left text-red-600 hover:bg-red-100"
-                                    >
-                                      Delete
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                            <p>{review.comment}</p>
                           </div>
-
-                          <div className="flex gap-1 my-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <span
-                                key={star}
-                                className={`text-xl ${
-                                  star <= review.rating ? "text-yellow-400" : "text-gray-300"
-                                }`}
-                              >
-                                ★
-                              </span>
-                            ))}
-                          </div>
-                          <p>{review.comment}</p>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
 
                     {productData.reviews.length > 3 && (
                       <button

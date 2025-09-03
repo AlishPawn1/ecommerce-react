@@ -1,38 +1,38 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { ShopContext } from '../context/ShopContext';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import { useSearchParams } from 'react-router-dom';
-import LoadingScreen from '../components/LoadingScreen';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import React, { useContext, useState, useEffect } from "react";
+import { ShopContext } from "../context/ShopContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useSearchParams } from "react-router-dom";
+import LoadingScreen from "../components/LoadingScreen";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
-  const [currentState, setCurrentState] = useState('Login');
+  const [currentState, setCurrentState] = useState("Login");
   const [showVerification, setShowVerification] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [codeExpired, setCodeExpired] = useState(false);
   const { setToken, setUser, navigate, backendUrl } = useContext(ShopContext);
 
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [searchParams] = useSearchParams();
-  const [address, setAddress] = useState('');
-  const [number, setNumber] = useState('');
+  const [address, setAddress] = useState("");
+  const [number, setNumber] = useState("");
   const [image, setImage] = useState(null);
 
   // New state for forgot password email input and loading
-  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
 
   // Show/hide password state
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    if (searchParams.get('verified') === 'true') {
-      toast.success('Email verified successfully! Please log in.');
-      setCurrentState('Login');
+    if (searchParams.get("verified") === "true") {
+      toast.success("Email verified successfully! Please log in.");
+      setCurrentState("Login");
       setShowVerification(false);
     }
   }, [searchParams]);
@@ -40,16 +40,18 @@ const Login = () => {
   const resendVerificationCode = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${backendUrl}/api/user/resend-code`, { email });
+      const response = await axios.post(`${backendUrl}/api/user/resend-code`, {
+        email,
+      });
       if (response.data.success) {
         toast.success(response.data.message);
         setCodeExpired(false);
       } else {
-        toast.error(response.data.message || 'Failed to resend code');
+        toast.error(response.data.message || "Failed to resend code");
       }
     } catch (error) {
-      console.error('Error resending code:', error);
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      console.error("Error resending code:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -59,17 +61,20 @@ const Login = () => {
     e.preventDefault();
     setForgotLoading(true);
     try {
-      const response = await axios.post(`${backendUrl}/api/user/forgot-password`, { email: forgotEmail });
+      const response = await axios.post(
+        `${backendUrl}/api/user/forgot-password`,
+        { email: forgotEmail },
+      );
       if (response.data.success) {
-        toast.success(response.data.message || 'Password reset email sent.');
-        setCurrentState('Login');
-        setForgotEmail('');
+        toast.success(response.data.message || "Password reset email sent.");
+        setCurrentState("Login");
+        setForgotEmail("");
       } else {
-        toast.error(response.data.message || 'Failed to send reset email.');
+        toast.error(response.data.message || "Failed to send reset email.");
       }
     } catch (error) {
-      console.error('Forgot password error:', error);
-      toast.error(error.response?.data?.message || 'Something went wrong.');
+      console.error("Forgot password error:", error);
+      toast.error(error.response?.data?.message || "Something went wrong.");
     } finally {
       setForgotLoading(false);
     }
@@ -81,66 +86,76 @@ const Login = () => {
 
     try {
       let response;
-      if (currentState === 'Sign Up') {
+      if (currentState === "Sign Up") {
         const formData = new FormData();
-        formData.append('name', name);
-        formData.append('email', email);
-        formData.append('password', password);
-        formData.append('number', number);
-        formData.append('address', address);
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("password", password);
+        formData.append("number", number);
+        formData.append("address", address);
         if (image) {
-          formData.append('image', image);
+          formData.append("image", image);
         }
-        console.log('Sign Up payload:', Object.fromEntries(formData));
-        response = await axios.post(`${backendUrl}/api/user/register`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
+        console.log("Sign Up payload:", Object.fromEntries(formData));
+        response = await axios.post(
+          `${backendUrl}/api/user/register`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
           },
-        });
+        );
         if (response.data.success) {
           toast.success(response.data.message);
           setShowVerification(true);
-          setCurrentState('Verify');
+          setCurrentState("Verify");
         } else {
-          toast.error(response.data.message || 'Registration failed');
+          toast.error(response.data.message || "Registration failed");
         }
-      } else if (currentState === 'Verify') {
-        console.log('Verify payload:', { email, code: verificationCode });
-        response = await axios.post(`${backendUrl}/api/user/verify-code`, { email, code: verificationCode });
+      } else if (currentState === "Verify") {
+        console.log("Verify payload:", { email, code: verificationCode });
+        response = await axios.post(`${backendUrl}/api/user/verify-code`, {
+          email,
+          code: verificationCode,
+        });
         if (response.data.success) {
           toast.success(response.data.message);
           setShowVerification(false);
-          setCurrentState('Login');
-          setVerificationCode('');
+          setCurrentState("Login");
+          setVerificationCode("");
           setCodeExpired(false);
         } else {
-          if (response.data.message === 'Verification code expired') {
+          if (response.data.message === "Verification code expired") {
             setCodeExpired(true);
-            toast.error('Verification code expired. Please resend a new code.');
+            toast.error("Verification code expired. Please resend a new code.");
           } else {
-            toast.error(response.data.message || 'Verification failed');
+            toast.error(response.data.message || "Verification failed");
           }
         }
-      } else if (currentState === 'Login') {
-        console.log('Login payload:', { email, password });
-        response = await axios.post(`${backendUrl}/api/user/login`, { email, password });
+      } else if (currentState === "Login") {
+        console.log("Login payload:", { email, password });
+        response = await axios.post(`${backendUrl}/api/user/login`, {
+          email,
+          password,
+        });
         if (response.data.success) {
           const { token, userId, userName } = response.data;
-          console.log('Full login response:', response.data); // Debug log
-          localStorage.setItem('token', token);
-          localStorage.setItem('userId', userId);
-          localStorage.setItem('name', userName); // Consistent key 'name'
+          console.log("Full login response:", response.data); // Debug log
+          localStorage.setItem("token", token);
+          localStorage.setItem("userId", userId);
+          localStorage.setItem("name", userName); // Consistent key 'name'
           setToken(token);
           setUser({ userId, name: userName }); // Use 'name' in user object
-          toast.success('Login successful!');
-          navigate('/');
+          toast.success("Login successful!");
+          navigate("/");
         } else {
-          toast.error(response.data.message || 'Login failed');
+          toast.error(response.data.message || "Login failed");
         }
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error(error.response?.data?.message || 'Something went wrong');
+      console.error("Error:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -152,7 +167,7 @@ const Login = () => {
       <div className="container">
         <form
           onSubmit={(e) => {
-            if (currentState === 'Forgot Password') {
+            if (currentState === "Forgot Password") {
               handleForgotPassword(e);
             } else {
               onSubmitHandler(e);
@@ -162,16 +177,16 @@ const Login = () => {
         >
           <div className="inline-flex items-center gap-2 mb-2 mt-10">
             <h1 className="primary-font text-3xl">
-              {currentState === 'Verify'
-                ? 'Verify Email'
-                : currentState === 'Forgot Password'
-                ? 'Forgot Password'
-                : currentState}
+              {currentState === "Verify"
+                ? "Verify Email"
+                : currentState === "Forgot Password"
+                  ? "Forgot Password"
+                  : currentState}
             </h1>
             <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
           </div>
 
-          {currentState === 'Sign Up' && (
+          {currentState === "Sign Up" && (
             <>
               <input
                 onChange={(e) => setName(e.target.value)}
@@ -206,7 +221,9 @@ const Login = () => {
             </>
           )}
 
-          {(currentState === 'Login' || currentState === 'Sign Up' || currentState === 'Verify') && (
+          {(currentState === "Login" ||
+            currentState === "Sign Up" ||
+            currentState === "Verify") && (
             <input
               onChange={(e) => setEmail(e.target.value)}
               value={email}
@@ -217,12 +234,12 @@ const Login = () => {
             />
           )}
 
-          {(currentState === 'Login' || currentState === 'Sign Up') && (
+          {(currentState === "Login" || currentState === "Sign Up") && (
             <div className="relative w-full">
               <input
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 className="w-full px-3 py-2 border border-gray-800 pr-10"
                 placeholder="Password"
                 required
@@ -232,14 +249,14 @@ const Login = () => {
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600"
                 tabIndex={-1}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
               </button>
             </div>
           )}
 
-          {currentState === 'Verify' && (
+          {currentState === "Verify" && (
             <>
               <input
                 onChange={(e) => setVerificationCode(e.target.value)}
@@ -250,7 +267,10 @@ const Login = () => {
                 required
               />
               {codeExpired && (
-                <p onClick={resendVerificationCode} className="cursor-pointer text-sm text-blue-600">
+                <p
+                  onClick={resendVerificationCode}
+                  className="cursor-pointer text-sm text-blue-600"
+                >
                   Resend Code
                 </p>
               )}
@@ -258,7 +278,7 @@ const Login = () => {
           )}
 
           {/* Forgot Password UI */}
-          {currentState === 'Forgot Password' && (
+          {currentState === "Forgot Password" && (
             <>
               <input
                 type="email"
@@ -269,7 +289,10 @@ const Login = () => {
                 className="w-full px-3 py-2 border border-gray-800"
               />
               <div className="w-full flex justify-between text-sm mt-[-8px]">
-                <p onClick={() => setCurrentState('Login')} className="cursor-pointer">
+                <p
+                  onClick={() => setCurrentState("Login")}
+                  className="cursor-pointer"
+                >
                   Back to Login
                 </p>
               </div>
@@ -277,41 +300,51 @@ const Login = () => {
           )}
 
           <div className="w-full flex justify-between text-sm mt-[-8px]">
-            {currentState !== 'Verify' && currentState !== 'Forgot Password' && (
-              <p
-                onClick={() => {
-                  setCurrentState('Verify');
-                  setShowVerification(true);
-                }}
-                className="cursor-pointer"
-              >
-                Verify code
-              </p>
-            )}
+            {currentState !== "Verify" &&
+              currentState !== "Forgot Password" && (
+                <p
+                  onClick={() => {
+                    setCurrentState("Verify");
+                    setShowVerification(true);
+                  }}
+                  className="cursor-pointer"
+                >
+                  Verify code
+                </p>
+              )}
 
-            {currentState === 'Login' && (
+            {currentState === "Login" && (
               <>
-                <p onClick={() => setCurrentState('Forgot Password')} className="cursor-pointer">
+                <p
+                  onClick={() => setCurrentState("Forgot Password")}
+                  className="cursor-pointer"
+                >
                   Forgot Password?
                 </p>
-                <p onClick={() => setCurrentState('Sign Up')} className="cursor-pointer">
+                <p
+                  onClick={() => setCurrentState("Sign Up")}
+                  className="cursor-pointer"
+                >
                   Create account
                 </p>
               </>
             )}
 
-            {currentState === 'Sign Up' && (
-              <p onClick={() => setCurrentState('Login')} className="cursor-pointer">
+            {currentState === "Sign Up" && (
+              <p
+                onClick={() => setCurrentState("Login")}
+                className="cursor-pointer"
+              >
                 Login Here
               </p>
             )}
 
-            {currentState === 'Verify' && (
+            {currentState === "Verify" && (
               <p
                 onClick={() => {
-                  setCurrentState('Login');
+                  setCurrentState("Login");
                   setShowVerification(false);
-                  setVerificationCode('');
+                  setVerificationCode("");
                   setCodeExpired(false);
                 }}
                 className="cursor-pointer"
@@ -326,13 +359,13 @@ const Login = () => {
             className="btn-box btn-black"
             disabled={loading || forgotLoading}
           >
-            {currentState === 'Login'
-              ? 'Sign In'
-              : currentState === 'Sign Up'
-              ? 'Sign Up'
-              : currentState === 'Verify'
-              ? 'Verify'
-              : 'Send Reset Link'}
+            {currentState === "Login"
+              ? "Sign In"
+              : currentState === "Sign Up"
+                ? "Sign Up"
+                : currentState === "Verify"
+                  ? "Verify"
+                  : "Send Reset Link"}
           </button>
         </form>
       </div>

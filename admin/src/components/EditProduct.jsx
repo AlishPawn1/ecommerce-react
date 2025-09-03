@@ -41,7 +41,9 @@ const EditProduct = () => {
         setStock(product.stock || "0");
         setIsBestseller(product.bestseller || false);
         setSelectedSizes(product.size || []);
-        const filledImages = [0, 1, 2, 3].map((i) => product.image?.[i] || null);
+        const filledImages = [0, 1, 2, 3].map(
+          (i) => product.image?.[i] || null,
+        );
         setImages(filledImages);
       } else {
         toast.error(res.data.message || "Failed to fetch product");
@@ -104,7 +106,7 @@ const EditProduct = () => {
 
   const toggleSize = (size) => {
     setSelectedSizes((prev) =>
-      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size],
     );
   };
 
@@ -133,9 +135,16 @@ const EditProduct = () => {
 
       console.log("Updating product with ID:", id);
       console.log("Request headers:", { Authorization: `Bearer ${token}` });
-      const res = await axios.put(`${backendUrl}/api/product/update/${id}`, formData, {
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.put(
+        `${backendUrl}/api/product/update/${id}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
 
       if (res.data.success) {
         toast.success("Product updated");
@@ -158,7 +167,10 @@ const EditProduct = () => {
   };
 
   return (
-    <form onSubmit={handleUpdate} className="flex flex-col w-full items-start gap-4 p-4 bg-white">
+    <form
+      onSubmit={handleUpdate}
+      className="flex flex-col w-full items-start gap-4 p-4 bg-white"
+    >
       {error && <p className="text-red-500">{error}</p>}
 
       {loading && (
@@ -174,10 +186,18 @@ const EditProduct = () => {
             <label key={index} className="cursor-pointer">
               <img
                 className="w-24 h-24 object-cover"
-                src={img instanceof File ? URL.createObjectURL(img) : img || assets.upload_area}
+                src={
+                  img instanceof File
+                    ? URL.createObjectURL(img)
+                    : img || assets.upload_area
+                }
                 alt="Upload"
               />
-              <input type="file" hidden onChange={(e) => handleImageChange(index, e)} />
+              <input
+                type="file"
+                hidden
+                onChange={(e) => handleImageChange(index, e)}
+              />
             </label>
           ))}
         </div>
@@ -280,7 +300,9 @@ const EditProduct = () => {
             <div
               key={size}
               className={`px-4 py-2 border rounded-lg cursor-pointer transition-all ${
-                selectedSizes.includes(size) ? "bg-gray-800 text-white" : "bg-gray-200"
+                selectedSizes.includes(size)
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200"
               }`}
               onClick={() => toggleSize(size)}
             >
@@ -298,7 +320,9 @@ const EditProduct = () => {
           onChange={() => setIsBestseller(!isBestseller)}
           className="cursor-pointer"
         />
-        <label htmlFor="bestseller" className="cursor-pointer">Mark as Bestseller</label>
+        <label htmlFor="bestseller" className="cursor-pointer">
+          Mark as Bestseller
+        </label>
       </div>
 
       <button

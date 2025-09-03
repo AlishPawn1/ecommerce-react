@@ -38,16 +38,24 @@ orderRouter.post("/userorders", authUser, userOrder);
 orderRouter.post("/updatePaymentStatus", authUser, updatePaymentStatus);
 
 // Admin: Get order counts by status
-orderRouter.get('/status-counts', async (req, res) => {
+orderRouter.get("/status-counts", async (req, res) => {
   try {
-    const statuses = ["Pending", "Packing", "Shipping", "Out for Delivery", "Completed"];
+    const statuses = [
+      "Pending",
+      "Packing",
+      "Shipping",
+      "Out for Delivery",
+      "Completed",
+    ];
     const counts = {};
     for (const status of statuses) {
       counts[status] = await orderModel.countDocuments({ status });
     }
     res.json({ success: true, counts });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Failed to fetch order counts" });
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch order counts" });
   }
 });
 

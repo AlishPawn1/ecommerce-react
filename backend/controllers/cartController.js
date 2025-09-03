@@ -7,7 +7,7 @@ const addToCart = async (req, res) => {
 
     // Retrieve the user data and initialize cartData if it doesn't exist
     const userData = await userModel.findById(userId);
-    let cartData = userData.cartData || {};  // Default to empty object if cartData doesn't exist
+    let cartData = userData.cartData || {}; // Default to empty object if cartData doesn't exist
 
     // Check if the item already exists in the cart
     if (cartData[itemId]) {
@@ -45,7 +45,10 @@ const updateCart = async (req, res) => {
     if (cartData[itemId] && cartData[itemId][size]) {
       cartData[itemId][size] = quantity; // Update the quantity for the specified item and size
     } else {
-      return res.json({ success: false, message: "Item or size not found in cart" });
+      return res.json({
+        success: false,
+        message: "Item or size not found in cart",
+      });
     }
 
     // Update the user's cart in the database

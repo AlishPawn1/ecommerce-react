@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   listProduct,
   addProduct,
@@ -21,111 +21,118 @@ import {
   updateProduct,
   addReview,
   deleteReview,
-} from '../controllers/productControllers.js';
-import upload from '../middleware/multer.js';
-import adminAuth from '../middleware/adminAuth.js';
-import auth from '../middleware/auth.js';
-import productModel from '../models/productModel.js';
-import authUser from '../middleware/auth.js';
+} from "../controllers/productControllers.js";
+import upload from "../middleware/multer.js";
+import adminAuth from "../middleware/adminAuth.js";
+import auth from "../middleware/auth.js";
+import productModel from "../models/productModel.js";
+import authUser from "../middleware/auth.js";
 
 const productRouter = express.Router();
 
 // Product Management
 productRouter.post(
-  '/add',
+  "/add",
   adminAuth,
   upload.fields([
-    { name: 'image1', maxCount: 1 },
-    { name: 'image2', maxCount: 1 },
-    { name: 'image3', maxCount: 1 },
-    { name: 'image4', maxCount: 1 },
+    { name: "image1", maxCount: 1 },
+    { name: "image2", maxCount: 1 },
+    { name: "image3", maxCount: 1 },
+    { name: "image4", maxCount: 1 },
   ]),
-  addProduct
+  addProduct,
 );
-productRouter.post('/remove', adminAuth, removeProduct);
-productRouter.post('/single', singleProduct);
-productRouter.get('/list', listProduct);
+productRouter.post("/remove", adminAuth, removeProduct);
+productRouter.post("/single", singleProduct);
+productRouter.get("/list", listProduct);
 
 // Stock Management
-productRouter.get('/stock/:id', adminAuth, editStockProduct);
-productRouter.put('/stock/:id', adminAuth, updateStock);
+productRouter.get("/stock/:id", adminAuth, editStockProduct);
+productRouter.put("/stock/:id", adminAuth, updateStock);
 
 // Update Product
 productRouter.put(
-  '/update/:id',
+  "/update/:id",
   adminAuth,
   upload.fields([
-    { name: 'image1', maxCount: 1 },
-    { name: 'image2', maxCount: 1 },
-    { name: 'image3', maxCount: 1 },
-    { name: 'image4', maxCount: 1 },
+    { name: "image1", maxCount: 1 },
+    { name: "image2", maxCount: 1 },
+    { name: "image3", maxCount: 1 },
+    { name: "image4", maxCount: 1 },
   ]),
-  updateProduct
+  updateProduct,
 );
 
 // Categories
-productRouter.post('/categories', adminAuth, category);
-productRouter.post('/subcategories', adminAuth, subcategory);
-productRouter.get('/categories', getCategories);
-productRouter.get('/subcategories', getSubCategories);
-productRouter.get('/categories/check', checkCategoryExists);
-productRouter.delete('/categories/:id', adminAuth, removeCategory);
-productRouter.get('/categories/:id', getSingleCategory);
-productRouter.put('/categories/:id', adminAuth, updateCategory);
+productRouter.post("/categories", adminAuth, category);
+productRouter.post("/subcategories", adminAuth, subcategory);
+productRouter.get("/categories", getCategories);
+productRouter.get("/subcategories", getSubCategories);
+productRouter.get("/categories/check", checkCategoryExists);
+productRouter.delete("/categories/:id", adminAuth, removeCategory);
+productRouter.get("/categories/:id", getSingleCategory);
+productRouter.put("/categories/:id", adminAuth, updateCategory);
 
-productRouter.get('/subcategories/check', checksubCategoryExists);
-productRouter.delete('/subcategories/:id', adminAuth, removesubCategory);
-productRouter.get('/subcategories/:id', getSinglesubCategory);
-productRouter.put('/subcategories/:id', adminAuth, updatesubCategory);
+productRouter.get("/subcategories/check", checksubCategoryExists);
+productRouter.delete("/subcategories/:id", adminAuth, removesubCategory);
+productRouter.get("/subcategories/:id", getSinglesubCategory);
+productRouter.put("/subcategories/:id", adminAuth, updatesubCategory);
 
 // Reviews
-productRouter.post('/reviews/:id', auth, addReview);
-productRouter.delete('/reviews/:productId/:reviewId', deleteReview);
+productRouter.post("/reviews/:id", auth, addReview);
+productRouter.delete("/reviews/:productId/:reviewId", deleteReview);
 
 // View Count
-productRouter.post('/view/:id', async (req, res) => {
+productRouter.post("/view/:id", async (req, res) => {
   try {
-    const { incrementViewCount } = await import('../controllers/productControllers.js');
+    const { incrementViewCount } = await import(
+      "../controllers/productControllers.js"
+    );
     await incrementViewCount(req, res);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 // Top Products
-productRouter.get('/top', async (req, res) => {
+productRouter.get("/top", async (req, res) => {
   try {
-    const { getTopProducts } = await import('../controllers/productControllers.js');
+    const { getTopProducts } = await import(
+      "../controllers/productControllers.js"
+    );
     await getTopProducts(req, res);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
 // Example: GET /api/product/my-reviews/count
-productRouter.get('/my-reviews/count', authUser, async (req, res) => {
+productRouter.get("/my-reviews/count", authUser, async (req, res) => {
   try {
     const userId = req.user._id.toString(); // ✅ Convert to string for comparison
 
-    const products = await productModel.find({ 'reviews.user': userId });
+    const products = await productModel.find({ "reviews.user": userId });
 
     let totalReviews = 0;
-    products.forEach(product => {
-      totalReviews += product.reviews.filter(r => r.user.toString() === userId).length;
+    products.forEach((product) => {
+      totalReviews += product.reviews.filter(
+        (r) => r.user.toString() === userId,
+      ).length;
     });
 
     res.json({ success: true, totalReviews });
   } catch (error) {
-    console.error('Error counting reviews:', error);
-    res.status(500).json({ success: false, message: 'Failed to count reviews' });
+    console.error("Error counting reviews:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to count reviews" });
   }
 });
-productRouter.get('/slug/:slug', async (req, res) => {
+productRouter.get("/slug/:slug", async (req, res) => {
   const product = await productModel.findOne({ slug: req.params.slug });
-  if (!product) return res.status(404).json({ success: false, message: 'Not found' });
+  if (!product)
+    return res.status(404).json({ success: false, message: "Not found" });
   res.json({ success: true, product });
 });
-
-
 
 export default productRouter;

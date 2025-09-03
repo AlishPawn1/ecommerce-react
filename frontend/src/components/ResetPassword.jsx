@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
-import { backendUrl } from '../App';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
+import { backendUrl } from "../App";
+import { toast } from "react-toastify";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +30,9 @@ const ResetPassword = () => {
     return (
       <section className="min-h-screen flex items-center justify-center p-4">
         <div className="container">
-          <p className="text-red-600 font-semibold">Invalid or missing reset token/email.</p>
+          <p className="text-red-600 font-semibold">
+            Invalid or missing reset token/email.
+          </p>
         </div>
       </section>
     );
@@ -40,30 +42,33 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password.length < 8) {
-      toast.error('Password must be at least 8 characters.');
+      toast.error("Password must be at least 8 characters.");
       return;
     }
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match.');
+      toast.error("Passwords do not match.");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axios.post(`${backendUrl}/api/user/reset-password`, {
-        token,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${backendUrl}/api/user/reset-password`,
+        {
+          token,
+          email,
+          password,
+        },
+      );
 
       if (response.data.success) {
-        toast.success('Password reset successful! Redirecting to login...');
-        setTimeout(() => navigate('/login'), 3000);
+        toast.success("Password reset successful! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 3000);
       } else {
-        toast.error(response.data.message || 'Reset failed');
+        toast.error(response.data.message || "Reset failed");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Server error');
+      toast.error(err.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
@@ -83,7 +88,7 @@ const ResetPassword = () => {
 
           <div className="relative w-full">
             <input
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               placeholder="New Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -96,15 +101,19 @@ const ResetPassword = () => {
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-700"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <AiFillEyeInvisible size={22} /> : <AiFillEye size={22} />}
+              {showPassword ? (
+                <AiFillEyeInvisible size={22} />
+              ) : (
+                <AiFillEye size={22} />
+              )}
             </button>
           </div>
 
           <div className="relative w-full">
             <input
-              type={showConfirmPassword ? 'text' : 'password'}
+              type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm New Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -117,9 +126,15 @@ const ResetPassword = () => {
               type="button"
               onClick={() => setShowConfirmPassword((prev) => !prev)}
               className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-700"
-              aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+              aria-label={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
             >
-              {showConfirmPassword ? <AiFillEyeInvisible size={22} /> : <AiFillEye size={22} />}
+              {showConfirmPassword ? (
+                <AiFillEyeInvisible size={22} />
+              ) : (
+                <AiFillEye size={22} />
+              )}
             </button>
           </div>
 
@@ -129,7 +144,7 @@ const ResetPassword = () => {
             className="btn-box btn-black"
             aria-busy={loading}
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
+            {loading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
       </div>
@@ -138,4 +153,3 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
-

@@ -53,12 +53,12 @@ const EditStock = () => {
 
       const response = await axios.put(
         `${backendUrl}/api/product/stock/${id}`,
-        { stock: newStock } // Send the total stock, not just the increment
+        { stock: newStock }, // Send the total stock, not just the increment
       );
 
       if (response.data.success) {
         toast.success(
-          `Added ${stockToAdd} items to stock. New stock: ${newStock}`
+          `Added ${stockToAdd} items to stock. New stock: ${newStock}`,
         );
         navigate("/addstock");
       } else {

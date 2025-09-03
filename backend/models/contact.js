@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const contactSchema = new mongoose.Schema(
   {
@@ -8,9 +8,9 @@ const contactSchema = new mongoose.Schema(
     // If you want subject, add here:
     // subject: { type: String }
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Contact = mongoose.model('Contact', contactSchema);
+const Contact = mongoose.model("Contact", contactSchema);
 
 export default Contact;

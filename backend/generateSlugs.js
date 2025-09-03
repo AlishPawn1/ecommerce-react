@@ -1,11 +1,11 @@
 // generateSlugs.js
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import mongoose from 'mongoose';
-import slugify from 'slugify';
-import productModel from './models/productModel.js'; // Adjust path if needed
+import mongoose from "mongoose";
+import slugify from "slugify";
+import productModel from "./models/productModel.js"; // Adjust path if needed
 
 const generateSlugs = async () => {
   try {
@@ -13,26 +13,22 @@ const generateSlugs = async () => {
     if (!mongoUrl) throw new Error("❌ MONGODB_URL not found in .env file");
 
     await mongoose.connect(mongoUrl);
-    console.log('✅ Connected to MongoDB');
+    console.log("✅ Connected to MongoDB");
 
     // Optional: Confirm database name
-    console.log('📂 Using DB:', mongoose.connection.name);
+    console.log("📂 Using DB:", mongoose.connection.name);
 
     const totalProducts = await productModel.countDocuments();
-    console.log('📦 Total products:', totalProducts);
+    console.log("📦 Total products:", totalProducts);
 
     const productsWithoutSlug = await productModel.find({
-      $or: [
-        { slug: { $exists: false } },
-        { slug: null },
-        { slug: '' }
-      ]
+      $or: [{ slug: { $exists: false } }, { slug: null }, { slug: "" }],
     });
 
-    console.log('❓ Products missing slug:', productsWithoutSlug.length);
+    console.log("❓ Products missing slug:", productsWithoutSlug.length);
 
     if (productsWithoutSlug.length === 0) {
-      console.log('✅ All products already have slugs');
+      console.log("✅ All products already have slugs");
       await mongoose.disconnect();
       process.exit(0);
     }
@@ -53,12 +49,11 @@ const generateSlugs = async () => {
       console.log(`✅ Generated slug for "${product.name}": ${slug}`);
     }
 
-    console.log('🎉 Slug generation completed');
+    console.log("🎉 Slug generation completed");
     await mongoose.disconnect();
     process.exit(0);
-
   } catch (error) {
-    console.error('❌ Error generating slugs:', error);
+    console.error("❌ Error generating slugs:", error);
     await mongoose.disconnect();
     process.exit(1);
   }

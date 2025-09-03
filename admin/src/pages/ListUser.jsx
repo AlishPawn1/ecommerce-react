@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { backendUrl } from '../App';
-import { assets } from '../assets/assets';
-import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { backendUrl } from "../App";
+import { assets } from "../assets/assets";
+import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 
 const paginationBtnStyle = {
-    height: '25px',
-    width: '25px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#000',
-    transition: 'background-color 0.3s',
-    borderRadius: '5px',
+  height: "25px",
+  width: "25px",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  borderColor: "#000",
+  transition: "background-color 0.3s",
+  borderRadius: "5px",
 };
 
 const ListUser = () => {
@@ -27,20 +27,21 @@ const ListUser = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        console.log('Fetching users from:', `${backendUrl}/api/user/users`);
+        console.log("Fetching users from:", `${backendUrl}/api/user/users`);
         const response = await axios.get(`${backendUrl}/api/user/users`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
         });
-        console.log('Response data:', response.data);
+        console.log("Response data:", response.data);
         setUsers(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
       } catch (err) {
-        const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch users';
+        const errorMessage =
+          err.response?.data?.message || err.message || "Failed to fetch users";
         setError(errorMessage);
         setLoading(false);
-        console.error('Error fetching users:', err);
+        console.error("Error fetching users:", err);
       }
     };
 
@@ -48,21 +49,24 @@ const ListUser = () => {
   }, []);
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await axios.delete(`${backendUrl}/api/user/users/${userId}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('adminToken')}`,
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
           },
         });
         setUsers(users.filter((user) => user._id !== userId));
-        alert('User deleted successfully');
+        alert("User deleted successfully");
         // Reset page if current page becomes empty after deletion
         const maxPage = Math.ceil((users.length - 1) / usersPerPage);
         if (currentPage > maxPage) setCurrentPage(maxPage);
       } catch (err) {
-        console.error('Error deleting user:', err);
-        alert('Failed to delete user: ' + (err.response?.data?.message || err.message));
+        console.error("Error deleting user:", err);
+        alert(
+          "Failed to delete user: " +
+            (err.response?.data?.message || err.message),
+        );
       }
     }
   };
@@ -125,13 +129,16 @@ const ListUser = () => {
                         height="100"
                         width="100"
                         alt={user.name}
-                        onError={(e) => (e.target.src = '/default-image.jpg')}
+                        onError={(e) => (e.target.src = "/default-image.jpg")}
                       />
                     </td>
                     <td data-label="User Address">{user.address}</td>
                     <td data-label="User Mobile">{user.number}</td>
                     <td data-label="Delete">
-                      <button onClick={() => handleDeleteUser(user._id)} className="btn btn-red">
+                      <button
+                        onClick={() => handleDeleteUser(user._id)}
+                        className="btn btn-red"
+                      >
                         Delete
                       </button>
                     </td>
@@ -141,64 +148,79 @@ const ListUser = () => {
             </table>
 
             {/* Pagination Controls */}
-            <nav className="pagination justify-content-center mt-5" aria-label="User list pagination">
+            <nav
+              className="pagination justify-content-center mt-5"
+              aria-label="User list pagination"
+            >
               <button
                 style={{
                   ...paginationBtnStyle,
-                  backgroundColor: currentPage === 1 ? '#e0e0e0' : '#000',
-                  color: currentPage === 1 ? '#888' : '#fff',
-                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                  backgroundColor: currentPage === 1 ? "#e0e0e0" : "#000",
+                  color: currentPage === 1 ? "#888" : "#fff",
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
                 }}
                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
                 aria-label="Previous page"
                 onMouseEnter={(e) => {
-                  if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+                  if (!e.currentTarget.disabled)
+                    e.currentTarget.style.backgroundColor = "#333";
                 }}
                 onMouseLeave={(e) => {
-                  if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+                  if (!e.currentTarget.disabled)
+                    e.currentTarget.style.backgroundColor = "#000";
                 }}
               >
                 <AiOutlineLeft />
               </button>
 
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  style={{
-                    ...paginationBtnStyle,
-                    backgroundColor: currentPage === page ? '#000' : '#fff',
-                    color: currentPage === page ? '#fff' : '#000',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => setCurrentPage(page)}
-                  onMouseEnter={(e) => {
-                    if (currentPage !== page) e.currentTarget.style.backgroundColor = '#ddd';
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentPage !== page) e.currentTarget.style.backgroundColor = '#fff';
-                  }}
-                  aria-label={`Go to page ${page}`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    style={{
+                      ...paginationBtnStyle,
+                      backgroundColor: currentPage === page ? "#000" : "#fff",
+                      color: currentPage === page ? "#fff" : "#000",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => setCurrentPage(page)}
+                    onMouseEnter={(e) => {
+                      if (currentPage !== page)
+                        e.currentTarget.style.backgroundColor = "#ddd";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (currentPage !== page)
+                        e.currentTarget.style.backgroundColor = "#fff";
+                    }}
+                    aria-label={`Go to page ${page}`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
 
               <button
                 style={{
                   ...paginationBtnStyle,
-                  backgroundColor: currentPage === totalPages ? '#e0e0e0' : '#000',
-                  color: currentPage === totalPages ? '#888' : '#fff',
-                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                  backgroundColor:
+                    currentPage === totalPages ? "#e0e0e0" : "#000",
+                  color: currentPage === totalPages ? "#888" : "#fff",
+                  cursor:
+                    currentPage === totalPages ? "not-allowed" : "pointer",
                 }}
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
                 onMouseEnter={(e) => {
-                  if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+                  if (!e.currentTarget.disabled)
+                    e.currentTarget.style.backgroundColor = "#333";
                 }}
                 onMouseLeave={(e) => {
-                  if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+                  if (!e.currentTarget.disabled)
+                    e.currentTarget.style.backgroundColor = "#000";
                 }}
               >
                 <AiOutlineRight />

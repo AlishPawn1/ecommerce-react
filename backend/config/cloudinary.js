@@ -10,9 +10,9 @@ const connectCloudinary = async () => {
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_SECRET_KEY,
     });
-    console.log('Cloudinary configured successfully');
+    console.log("Cloudinary configured successfully");
   } catch (error) {
-    console.error('Cloudinary configuration error:', error.message);
+    console.error("Cloudinary configuration error:", error.message);
     throw error;
   }
 };

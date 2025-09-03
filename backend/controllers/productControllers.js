@@ -1,24 +1,38 @@
-import { v2 as cloudinary } from 'cloudinary';
-import productModel from '../models/productModel.js';
-import mongoose from 'mongoose';
-import Category from '../models/category.js';
-import Subcategory from '../models/subcategory.js';
-import userModel from '../models/userModel.js';
+import { v2 as cloudinary } from "cloudinary";
+import productModel from "../models/productModel.js";
+import mongoose from "mongoose";
+import Category from "../models/category.js";
+import Subcategory from "../models/subcategory.js";
+import userModel from "../models/userModel.js";
 
 // Add продукт
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, subCategory, size, bestseller, stock, additionalDescription } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      size,
+      bestseller,
+      stock,
+      additionalDescription,
+    } = req.body;
 
     if (!name || !description || !price || !category || !subCategory) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({ success: false, message: 'No images uploaded' });
+      return res
+        .status(400)
+        .json({ success: false, message: "No images uploaded" });
     }
 
-    const parsedSize = Array.isArray(size) ? size : JSON.parse(size || '[]');
+    const parsedSize = Array.isArray(size) ? size : JSON.parse(size || "[]");
 
     const imageFiles = [
       req.files.image1?.[0],
@@ -30,15 +44,17 @@ const addProduct = async (req, res) => {
     const imageUrls = await Promise.all(
       imageFiles.map(async (item) => {
         const result = await cloudinary.uploader.upload(item.path, {
-          resource_type: 'image',
-          folder: 'products',
+          resource_type: "image",
+          folder: "products",
         });
         return result.secure_url;
-      })
+      }),
     );
 
     if (imageUrls.length === 0) {
-      return res.status(400).json({ success: false, message: 'Failed to upload images' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Failed to upload images" });
     }
 
     const newProduct = new productModel({
@@ -48,7 +64,7 @@ const addProduct = async (req, res) => {
       category,
       subCategory,
       size: parsedSize,
-      bestseller: bestseller === 'true',
+      bestseller: bestseller === "true",
       stock: parseInt(stock, 10) || 0,
       image: imageUrls,
       additionalDescription,
@@ -59,14 +75,14 @@ const addProduct = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Product added successfully',
+      message: "Product added successfully",
       product: newProduct,
     });
   } catch (error) {
-    console.error('Error in addProduct:', error);
+    console.error("Error in addProduct:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -75,18 +91,36 @@ const addProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, price, category, subCategory, size, bestseller, stock, additionalDescription } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      size,
+      bestseller,
+      stock,
+      additionalDescription,
+    } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
     const product = await productModel.findById(id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
-    const parsedSize = size ? (Array.isArray(size) ? size : JSON.parse(size || '[]')) : product.size;
+    const parsedSize = size
+      ? Array.isArray(size)
+        ? size
+        : JSON.parse(size || "[]")
+      : product.size;
 
     let imageUrls = product.image;
     if (req.files && Object.keys(req.files).length > 0) {
@@ -100,11 +134,11 @@ const updateProduct = async (req, res) => {
       imageUrls = await Promise.all(
         imageFiles.map(async (item) => {
           const result = await cloudinary.uploader.upload(item.path, {
-            resource_type: 'image',
-            folder: 'products',
+            resource_type: "image",
+            folder: "products",
           });
           return result.secure_url;
-        })
+        }),
       );
     }
 
@@ -114,24 +148,25 @@ const updateProduct = async (req, res) => {
     product.category = category || product.category;
     product.subCategory = subCategory || product.subCategory;
     product.size = parsedSize;
-    product.bestseller = bestseller === 'true' || product.bestseller;
+    product.bestseller = bestseller === "true" || product.bestseller;
     product.stock = stock !== undefined ? parseInt(stock, 10) : product.stock;
     product.image = imageUrls.length > 0 ? imageUrls : product.image;
-    product.additionalDescription = additionalDescription || product.additionalDescription;
+    product.additionalDescription =
+      additionalDescription || product.additionalDescription;
     product._updatedBy = req.user?._id;
 
     await product.save();
 
     res.status(200).json({
       success: true,
-      message: 'Product updated successfully',
+      message: "Product updated successfully",
       product,
     });
   } catch (error) {
-    console.error('Error in updateProduct:', error);
+    console.error("Error in updateProduct:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -142,14 +177,14 @@ const listProduct = async (req, res) => {
     const products = await productModel.find({});
     res.status(200).json({
       success: true,
-      message: 'Products retrieved successfully',
+      message: "Products retrieved successfully",
       products: products,
     });
   } catch (error) {
-    console.error('Error in listProduct:', error);
+    console.error("Error in listProduct:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve products',
+      message: "Failed to retrieve products",
     });
   }
 };
@@ -160,24 +195,28 @@ const removeProduct = async (req, res) => {
     const { id } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
     const deletedProduct = await productModel.findByIdAndDelete(id);
 
     if (!deletedProduct) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Product removed successfully',
+      message: "Product removed successfully",
     });
   } catch (error) {
-    console.error('Error in removeProduct:', error);
+    console.error("Error in removeProduct:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -188,24 +227,28 @@ const removeCategory = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid category ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category ID" });
     }
 
     const deletedCategory = await Category.findByIdAndDelete(id);
 
     if (!deletedCategory) {
-      return res.status(404).json({ success: false, message: 'Category not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Category removed successfully',
+      message: "Category removed successfully",
     });
   } catch (error) {
-    console.error('Error in removeCategory:', error);
+    console.error("Error in removeCategory:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -216,19 +259,23 @@ const singleProduct = async (req, res) => {
     const { id } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
     const product = await productModel.findById(id);
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     // Ensure all review.user fields are strings
     if (product.reviews && Array.isArray(product.reviews)) {
-      product.reviews = product.reviews.map(r => {
-        const reviewObj = typeof r.toObject === 'function' ? r.toObject() : r;
+      product.reviews = product.reviews.map((r) => {
+        const reviewObj = typeof r.toObject === "function" ? r.toObject() : r;
         return {
           ...reviewObj,
           user: reviewObj.user ? reviewObj.user.toString() : "",
@@ -241,10 +288,10 @@ const singleProduct = async (req, res) => {
       product: product,
     });
   } catch (error) {
-    console.error('Error in singleProduct:', error);
+    console.error("Error in singleProduct:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -255,13 +302,19 @@ const editStockProduct = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
-    const product = await productModel.findById(id).select('name stock image price');
+    const product = await productModel
+      .findById(id)
+      .select("name stock image price");
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     res.status(200).json({
@@ -269,10 +322,10 @@ const editStockProduct = async (req, res) => {
       product: product,
     });
   } catch (error) {
-    console.error('Error in editStockProduct:', error);
+    console.error("Error in editStockProduct:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -284,29 +337,39 @@ const updateStock = async (req, res) => {
     const { stock } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
     if (stock === undefined || isNaN(stock) || stock < 0) {
-      return res.status(400).json({ success: false, message: 'Stock must be a positive number' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Stock must be a positive number" });
     }
 
-    const product = await productModel.findByIdAndUpdate(id, { stock: parseInt(stock, 10) }, { new: true });
+    const product = await productModel.findByIdAndUpdate(
+      id,
+      { stock: parseInt(stock, 10) },
+      { new: true },
+    );
 
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Stock updated successfully',
+      message: "Stock updated successfully",
       product: product,
     });
   } catch (error) {
-    console.error('Error in updateStock:', error);
+    console.error("Error in updateStock:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -317,15 +380,18 @@ const getCategories = async (req, res) => {
     const categories = await Category.find({}).lean();
     res.status(200).json({
       success: true,
-      message: categories.length > 0 ? 'Categories retrieved successfully' : 'No categories found',
+      message:
+        categories.length > 0
+          ? "Categories retrieved successfully"
+          : "No categories found",
       data: categories || [],
     });
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error("Error fetching categories:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch categories',
-      error: error.message || 'Internal server error',
+      message: "Failed to fetch categories",
+      error: error.message || "Internal server error",
     });
   }
 };
@@ -334,17 +400,19 @@ const category = async (req, res) => {
   try {
     const { name } = req.body;
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
+    if (!name || typeof name !== "string" || !name.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Category name is required and must be a non-empty string',
+        message: "Category name is required and must be a non-empty string",
       });
     }
 
     const trimmedName = name.trim();
     const existingCategory = await Category.findOne({ name: trimmedName });
     if (existingCategory) {
-      return res.status(400).json({ success: false, message: 'Category already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Category already exists" });
     }
 
     const newCategory = new Category({ name: trimmedName });
@@ -352,18 +420,20 @@ const category = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Category created successfully',
+      message: "Category created successfully",
       data: newCategory,
     });
   } catch (error) {
-    console.error('Error creating category:', error);
+    console.error("Error creating category:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Category already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Category already exists" });
     }
     res.status(500).json({
       success: false,
-      message: 'Failed to create category',
-      error: error.message || 'Internal server error',
+      message: "Failed to create category",
+      error: error.message || "Internal server error",
     });
   }
 };
@@ -373,25 +443,29 @@ const getSingleCategory = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid category ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category ID" });
     }
 
     const category = await Category.findById(id);
 
     if (!category) {
-      return res.status(404).json({ success: false, message: 'Category not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Category retrieved successfully',
+      message: "Category retrieved successfully",
       data: category,
     });
   } catch (error) {
-    console.error('Error in getSingleCategory:', error);
+    console.error("Error in getSingleCategory:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -402,33 +476,46 @@ const updateCategory = async (req, res) => {
     const { name } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid category ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category ID" });
     }
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Category name is required and must be a non-empty string' });
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required and must be a non-empty string",
+      });
     }
 
     const trimmedName = name.trim();
-    const category = await Category.findByIdAndUpdate(id, { name: trimmedName }, { new: true, runValidators: true });
+    const category = await Category.findByIdAndUpdate(
+      id,
+      { name: trimmedName },
+      { new: true, runValidators: true },
+    );
 
     if (!category) {
-      return res.status(404).json({ success: false, message: 'Category not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Category updated successfully',
+      message: "Category updated successfully",
       data: category,
     });
   } catch (error) {
-    console.error('Error in updateCategory:', error);
+    console.error("Error in updateCategory:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Category name already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Category name already exists" });
     }
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -438,16 +525,18 @@ const checkCategoryExists = async (req, res) => {
     const { name } = req.query;
 
     if (!name) {
-      return res.status(400).json({ success: false, message: 'Category name is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Category name is required" });
     }
 
     const exists = await Category.exists({ name });
     res.status(200).json({ exists });
   } catch (error) {
-    console.error('Error in checkCategoryExists:', error);
+    console.error("Error in checkCategoryExists:", error);
     res.status(500).json({
       success: false,
-      message: 'Error checking category',
+      message: "Error checking category",
       error: error.message,
     });
   }
@@ -459,15 +548,18 @@ const getSubCategories = async (req, res) => {
     const subcategories = await Subcategory.find({}).lean();
     res.status(200).json({
       success: true,
-      message: subcategories.length > 0 ? 'Subcategories retrieved successfully' : 'No subcategories found',
+      message:
+        subcategories.length > 0
+          ? "Subcategories retrieved successfully"
+          : "No subcategories found",
       data: subcategories || [],
     });
   } catch (error) {
-    console.error('Error fetching subcategories:', error);
+    console.error("Error fetching subcategories:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch subcategories',
-      error: error.message || 'Internal server error',
+      message: "Failed to fetch subcategories",
+      error: error.message || "Internal server error",
     });
   }
 };
@@ -476,14 +568,21 @@ const subcategory = async (req, res) => {
   try {
     const { name } = req.body;
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Subcategory name is required and must be a non-empty string' });
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Subcategory name is required and must be a non-empty string",
+      });
     }
 
     const trimmedName = name.trim();
-    const existingSubCategory = await Subcategory.findOne({ name: trimmedName });
+    const existingSubCategory = await Subcategory.findOne({
+      name: trimmedName,
+    });
     if (existingSubCategory) {
-      return res.status(400).json({ success: false, message: 'Subcategory already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Subcategory already exists" });
     }
 
     const newSubCategory = new Subcategory({ name: trimmedName });
@@ -491,18 +590,20 @@ const subcategory = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Subcategory created successfully',
+      message: "Subcategory created successfully",
       data: newSubCategory,
     });
   } catch (error) {
-    console.error('Error creating subcategory:', error);
+    console.error("Error creating subcategory:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Subcategory already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Subcategory already exists" });
     }
     res.status(500).json({
       success: false,
-      message: 'Failed to create subcategory',
-      error: error.message || 'Internal server error',
+      message: "Failed to create subcategory",
+      error: error.message || "Internal server error",
     });
   }
 };
@@ -512,25 +613,29 @@ const getSinglesubCategory = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid subcategory ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid subcategory ID" });
     }
 
     const subcategory = await Subcategory.findById(id);
 
     if (!subcategory) {
-      return res.status(404).json({ success: false, message: 'Subcategory not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Subcategory not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Subcategory retrieved successfully',
+      message: "Subcategory retrieved successfully",
       data: subcategory,
     });
   } catch (error) {
-    console.error('Error in getSinglesubCategory:', error);
+    console.error("Error in getSinglesubCategory:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -540,24 +645,28 @@ const removesubCategory = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid subcategory ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid subcategory ID" });
     }
 
     const deletedSubCategory = await Subcategory.findByIdAndDelete(id);
 
     if (!deletedSubCategory) {
-      return res.status(404).json({ success: false, message: 'Subcategory not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Subcategory not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Subcategory removed successfully',
+      message: "Subcategory removed successfully",
     });
   } catch (error) {
-    console.error('Error in removesubCategory:', error);
+    console.error("Error in removesubCategory:", error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -568,33 +677,46 @@ const updatesubCategory = async (req, res) => {
     const { name } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid subcategory ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid subcategory ID" });
     }
 
-    if (!name || typeof name !== 'string' || !name.trim()) {
-      return res.status(400).json({ success: false, message: 'Subcategory name is required and must be a non-empty string' });
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Subcategory name is required and must be a non-empty string",
+      });
     }
 
     const trimmedName = name.trim();
-    const subcategory = await Subcategory.findByIdAndUpdate(id, { name: trimmedName }, { new: true, runValidators: true });
+    const subcategory = await Subcategory.findByIdAndUpdate(
+      id,
+      { name: trimmedName },
+      { new: true, runValidators: true },
+    );
 
     if (!subcategory) {
-      return res.status(404).json({ success: false, message: 'Subcategory not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Subcategory not found" });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Subcategory updated successfully',
+      message: "Subcategory updated successfully",
       data: subcategory,
     });
   } catch (error) {
-    console.error('Error in updatesubCategory:', error);
+    console.error("Error in updatesubCategory:", error);
     if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: 'Subcategory name already exists' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Subcategory name already exists" });
     }
     res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: error.message || "Internal server error",
     });
   }
 };
@@ -604,16 +726,18 @@ const checksubCategoryExists = async (req, res) => {
     const { name } = req.query;
 
     if (!name) {
-      return res.status(400).json({ success: false, message: 'Subcategory name is required' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Subcategory name is required" });
     }
 
     const exists = await Subcategory.exists({ name });
     res.status(200).json({ exists });
   } catch (error) {
-    console.error('Error in checksubCategoryExists:', error);
+    console.error("Error in checksubCategoryExists:", error);
     res.status(500).json({
       success: false,
-      message: 'Error checking subcategory',
+      message: "Error checking subcategory",
       error: error.message,
     });
   }
@@ -623,18 +747,26 @@ const incrementViewCount = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: 'Invalid product ID' });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
     const product = await productModel.findById(id);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
     product.viewCount += 1;
     await product.save();
-    res.json({ success: true, message: 'View count incremented' });
+    res.json({ success: true, message: "View count incremented" });
   } catch (error) {
-    console.error('Error incrementing view count:', error);
-    res.status(500).json({ success: false, message: 'Error incrementing view count', error: error.message });
+    console.error("Error incrementing view count:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error incrementing view count",
+      error: error.message,
+    });
   }
 };
 
@@ -679,17 +811,24 @@ const addReview = async (req, res) => {
     }
 
     // Check for existing review by this user
-    const existingReview = product.reviews.find((r) => r.user.toString() === userId.toString());
+    const existingReview = product.reviews.find(
+      (r) => r.user.toString() === userId.toString(),
+    );
 
     if (existingReview && !_id) {
       // If trying to add a new review but one exists, and not in edit mode
       return res.status(400).json({
         success: false,
-        message: "You have already submitted a review for this product. Please edit or delete your existing review.",
+        message:
+          "You have already submitted a review for this product. Please edit or delete your existing review.",
       });
     }
 
-    if (_id && existingReview && existingReview._id.toString() === _id.toString()) {
+    if (
+      _id &&
+      existingReview &&
+      existingReview._id.toString() === _id.toString()
+    ) {
       // Update existing review
       existingReview.rating = rating;
       existingReview.comment = comment.trim();
@@ -710,17 +849,18 @@ const addReview = async (req, res) => {
 
     // Otherwise push a new one
     product.reviews.push({
-      user:     new mongoose.Types.ObjectId(userId),
+      user: new mongoose.Types.ObjectId(userId),
       username,
       rating,
-      comment:  comment.trim(),
-      date:     new Date()
+      comment: comment.trim(),
+      date: new Date(),
     });
 
     // Update review count and average rating
     product.reviewCount = product.reviews.length;
     product.averageRating =
-      product.reviews.reduce((acc, r) => acc + r.rating, 0) / (product.reviews.length || 1);
+      product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+      (product.reviews.length || 1);
 
     await product.save();
     return res.json({ success: true, message: "Review added successfully." });
@@ -736,27 +876,40 @@ const addReview = async (req, res) => {
 const deleteReview = async (req, res) => {
   try {
     const { productId, reviewId } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(productId) || !mongoose.Types.ObjectId.isValid(reviewId)) {
-      return res.status(400).json({ success: false, message: 'Invalid product or review ID.' });
+    if (
+      !mongoose.Types.ObjectId.isValid(productId) ||
+      !mongoose.Types.ObjectId.isValid(reviewId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product or review ID." });
     }
 
     const product = await productModel.findById(productId);
     if (!product) {
-      return res.status(404).json({ success: false, message: 'Product not found.' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
     }
 
-    const reviewIndex = product.reviews.findIndex(r => r._id.toString() === reviewId);
+    const reviewIndex = product.reviews.findIndex(
+      (r) => r._id.toString() === reviewId,
+    );
     if (reviewIndex === -1) {
-      return res.status(404).json({ success: false, message: 'Review not found.' });
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found." });
     }
 
     product.reviews.splice(reviewIndex, 1);
     await product.save();
 
-    res.json({ success: true, message: 'Review deleted successfully.' });
+    res.json({ success: true, message: "Review deleted successfully." });
   } catch (error) {
-    console.error('Error deleting review:', error);
-    res.status(500).json({ success: false, message: 'Server error.', error: error.message });
+    console.error("Error deleting review:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error.", error: error.message });
   }
 };
 
@@ -806,16 +959,27 @@ const deleteReview = async (req, res) => {
 const getTopProducts = async (req, res) => {
   try {
     const { by } = req.query;
-    if (!['viewCount', 'averageRating'].includes(by)) {
-      return res.status(400).json({ success: false, message: 'Invalid sort parameter' });
+    if (!["viewCount", "averageRating"].includes(by)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid sort parameter" });
     }
 
     // Fetch all products to calculate global average rating
-    const allProducts = await productModel.find({}).select('averageRating reviewCount').lean();
+    const allProducts = await productModel
+      .find({})
+      .select("averageRating reviewCount")
+      .lean();
 
     // Calculate global average rating C
-    const totalRatingSum = allProducts.reduce((sum, p) => sum + (p.averageRating * p.reviewCount), 0);
-    const totalReviewCount = allProducts.reduce((sum, p) => sum + p.reviewCount, 0);
+    const totalRatingSum = allProducts.reduce(
+      (sum, p) => sum + p.averageRating * p.reviewCount,
+      0,
+    );
+    const totalReviewCount = allProducts.reduce(
+      (sum, p) => sum + p.reviewCount,
+      0,
+    );
     const C = totalReviewCount ? totalRatingSum / totalReviewCount : 0;
 
     const m = 5;
@@ -823,10 +987,11 @@ const getTopProducts = async (req, res) => {
     // Fetch products for sorting
     let products = await productModel.find().lean();
 
-    if (by === 'averageRating') {
+    if (by === "averageRating") {
       // Add Bayesian score to each product
-      products = products.map(p => {
-        const score = (p.averageRating * p.reviewCount + C * m) / (p.reviewCount + m);
+      products = products.map((p) => {
+        const score =
+          (p.averageRating * p.reviewCount + C * m) / (p.reviewCount + m);
         return { ...p, score };
       });
 
@@ -837,19 +1002,25 @@ const getTopProducts = async (req, res) => {
       products = products.slice(0, 5);
 
       // Optional: Log for debugging
-      console.log('Sorted by Bayesian score:');
-      products.forEach(p => {
-        console.log(`- ${p.name} | averageRating: ${p.averageRating} | reviewCount: ${p.reviewCount} | score: ${p.score.toFixed(2)}`);
+      console.log("Sorted by Bayesian score:");
+      products.forEach((p) => {
+        console.log(
+          `- ${p.name} | averageRating: ${p.averageRating} | reviewCount: ${p.reviewCount} | score: ${p.score.toFixed(2)}`,
+        );
       });
-    } else if (by === 'viewCount') {
+    } else if (by === "viewCount") {
       // Sort by viewCount descending and limit
       products = products.sort((a, b) => b.viewCount - a.viewCount).slice(0, 5);
     }
 
     res.json({ success: true, data: products });
   } catch (error) {
-    console.error('Error fetching top products:', error);
-    res.status(500).json({ success: false, message: 'Error fetching top products', error: error.message });
+    console.error("Error fetching top products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching top products",
+      error: error.message,
+    });
   }
 };
 

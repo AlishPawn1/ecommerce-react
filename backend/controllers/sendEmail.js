@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 // Configure Nodemailer transport with Gmail (You can use another provider if needed)
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER, // Your Gmail email address
     pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
@@ -20,9 +20,9 @@ const sendEmail = async (toEmail, subject, message) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('Verification email sent successfully!');
+    console.log("Verification email sent successfully!");
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
     if (error.response) {
       console.error(error.response.body);
     }

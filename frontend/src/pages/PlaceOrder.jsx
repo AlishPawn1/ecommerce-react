@@ -58,7 +58,7 @@ const PlaceOrder = () => {
         for (const item in cartItem[items]) {
           if (cartItem[items][item] > 0) {
             const itemInfo = structuredClone(
-              products.find((product) => product._id === items)
+              products.find((product) => product._id === items),
             );
             if (itemInfo) {
               itemInfo.size = item;
@@ -90,7 +90,7 @@ const PlaceOrder = () => {
             orderData,
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           if (response.data.success) {
@@ -108,7 +108,7 @@ const PlaceOrder = () => {
             orderData,
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           if (responseStripe.data.success) {
@@ -125,7 +125,7 @@ const PlaceOrder = () => {
             orderData,
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           console.log("Khalti Response:", responseKhalti.data);
@@ -273,12 +273,18 @@ const PlaceOrder = () => {
                   >
                     <p
                       className={`min-w-3.5 h-3.5 border rounded-full ${
-                        method === payMethod ? "bg-green-400 border-green-400" : ""
+                        method === payMethod
+                          ? "bg-green-400 border-green-400"
+                          : ""
                       }`}
                     ></p>
                     {payMethod !== "cod" ? (
                       assets[payMethod] ? (
-                        <img src={assets[payMethod]} className="h-5" alt={payMethod} />
+                        <img
+                          src={assets[payMethod]}
+                          className="h-5"
+                          alt={payMethod}
+                        />
                       ) : (
                         <p className="text-red-500 text-sm">Image not found</p>
                       )

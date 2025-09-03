@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../App";
 import { ShopContext } from "../context/ShopContext";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const PaymentReturn = () => {
   const location = useLocation();
@@ -17,28 +17,27 @@ const PaymentReturn = () => {
 
     if (!pidx || !purchase_order_id) {
       toast.error("Missing payment details.");
-      navigate('/order');
+      navigate("/order");
       return;
     }
 
     const verifyPayment = async () => {
       try {
-        const res = await axios.get(
-          `${backendUrl}/api/order/khalti/verify`,
-          { params: { pidx, orderId: purchase_order_id } }
-        );
+        const res = await axios.get(`${backendUrl}/api/order/khalti/verify`, {
+          params: { pidx, orderId: purchase_order_id },
+        });
 
         if (res.data.success) {
           setCartItems({});
           toast.success("Payment verified successfully");
-          navigate('/order');
+          navigate("/order");
         } else {
           toast.error("Payment verification failed");
-          navigate('/cart');
+          navigate("/cart");
         }
       } catch (error) {
         toast.error("Error verifying payment. Please contact support.");
-        navigate('/cart');
+        navigate("/cart");
       }
     };
 

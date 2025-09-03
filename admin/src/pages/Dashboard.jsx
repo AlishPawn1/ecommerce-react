@@ -1,14 +1,18 @@
 // Dashboard.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { backendUrl } from '../App';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { backendUrl } from "../App";
 
 const orderStatuses = [
-  { key: 'Pending', label: 'Pending', icon: 'fa-regular fa-clock' },
-  { key: 'Packing', label: 'Packing', icon: 'fa-solid fa-box-open' },
-  { key: 'Shipping', label: 'Shipping', icon: 'fa-solid fa-truck' },
-  { key: 'Out for Delivery', label: 'Out for Delivery', icon: 'fa-solid fa-motorcycle' },
-  { key: 'Completed', label: 'Completed', icon: 'fa-regular fa-circle-check' },
+  { key: "Pending", label: "Pending", icon: "fa-regular fa-clock" },
+  { key: "Packing", label: "Packing", icon: "fa-solid fa-box-open" },
+  { key: "Shipping", label: "Shipping", icon: "fa-solid fa-truck" },
+  {
+    key: "Out for Delivery",
+    label: "Out for Delivery",
+    icon: "fa-solid fa-motorcycle",
+  },
+  { key: "Completed", label: "Completed", icon: "fa-regular fa-circle-check" },
 ];
 
 const Dashboard = () => {
@@ -39,8 +43,8 @@ const Dashboard = () => {
         setStatusCounts(statusCountsRes.data.counts || {});
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching dashboard data:', err);
-        setError('Failed to load dashboard data');
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to load dashboard data");
         setLoading(false);
       }
     };
@@ -66,7 +70,12 @@ const Dashboard = () => {
               </div>
               <div className="content">
                 <h3 className="title">Total Sales</h3>
-                <span>Rs. {metrics.totalSales.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                <span>
+                  Rs.{" "}
+                  {metrics.totalSales.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                  })}
+                </span>
               </div>
             </div>
           </div>
@@ -101,7 +110,11 @@ const Dashboard = () => {
                 </div>
                 <div className="content">
                   <h3 className="title">{label}</h3>
-                  <span>{statusCounts[key] || metrics[`total${key.replace(' ', '')}`] || 0}</span>
+                  <span>
+                    {statusCounts[key] ||
+                      metrics[`total${key.replace(" ", "")}`] ||
+                      0}
+                  </span>
                 </div>
               </div>
             </div>

@@ -20,7 +20,9 @@ const EditCategory = () => {
   const fetchCategoryDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${backendUrl}/api/product/categories/${id}`);
+      const response = await axios.get(
+        `${backendUrl}/api/product/categories/${id}`,
+      );
       if (response.data.success && response.data.data) {
         setCategory(response.data.data);
         setCategoryName(response.data.data.name); // Set the current name for editing
@@ -48,11 +50,11 @@ const EditCategory = () => {
 
     try {
       setUpdating(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${backendUrl}/api/product/categories/${id}`,
         { name: categoryName },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (response.data.success) {

@@ -49,10 +49,12 @@ const Sidebar = () => {
         </li>
         {/* Dropdown Menu */}
         <li className="relative">
-          <button onClick={() => toggleDropdown("insert")} >
+          <button onClick={() => toggleDropdown("insert")}>
             <i className="fa-solid fa-download"></i>
             <span className="hidden md:block">Insert</span>
-            <i className={`fa-solid fa-chevron-down transition-transform ml-auto ${openDropdown === "insert" ? "rotate-180" : ""}`}></i>
+            <i
+              className={`fa-solid fa-chevron-down transition-transform ml-auto ${openDropdown === "insert" ? "rotate-180" : ""}`}
+            ></i>
           </button>
           {openDropdown === "insert" && (
             <ul className="sub-menu mt-2 pl-4">
@@ -72,7 +74,9 @@ const Sidebar = () => {
           <button onClick={() => toggleDropdown("list")}>
             <i className="fa-solid fa-list"></i>
             <span className="hidden md:block">List</span>
-            <i className={`fa-solid fa-chevron-down transition-transform ml-auto ${openDropdown === "list" ? "rotate-180" : ""}`}></i>
+            <i
+              className={`fa-solid fa-chevron-down transition-transform ml-auto ${openDropdown === "list" ? "rotate-180" : ""}`}
+            ></i>
           </button>
           {openDropdown === "list" && (
             <ul className="sub-menu mt-2 pl-4">

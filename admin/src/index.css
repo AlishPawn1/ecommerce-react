@@ -157,7 +157,6 @@ table {
   border-color: red;
 }
 
-
 .d-flex {
   display: flex;
 }
@@ -192,17 +191,17 @@ table {
 .card {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
 
 .card-body {
   padding: 15px;
 }
-.justify-content-between{
+.justify-content-between {
   justify-content: space-between;
-} 
-.align-items-center{
+}
+.align-items-center {
   align-items: center;
 }
 .col-md-6 {
@@ -337,9 +336,10 @@ table {
   display: block; /* Default display for smaller screens */
 }
 
-@media (min-width: 768px) { /* md breakpoint typically starts at 768px */
+@media (min-width: 768px) {
+  /* md breakpoint typically starts at 768px */
   .d-md-flex {
-      display: flex;
+    display: flex;
   }
 }
 
@@ -349,7 +349,7 @@ table {
 
 @media (min-width: 768px) {
   .justify-content-md-end {
-      justify-content: flex-end;
+    justify-content: flex-end;
   }
 }
 

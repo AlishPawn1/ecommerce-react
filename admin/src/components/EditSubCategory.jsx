@@ -20,7 +20,9 @@ const EditSubCategory = () => {
   const fetchSubCategoryDetails = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${backendUrl}/api/product/subcategories/${id}`);
+      const response = await axios.get(
+        `${backendUrl}/api/product/subcategories/${id}`,
+      );
       if (response.data.success && response.data.data) {
         setSubCategory(response.data.data);
         setSubCategoryName(response.data.data.name);
@@ -31,7 +33,9 @@ const EditSubCategory = () => {
       }
     } catch (error) {
       console.error("Error fetching subcategory:", error);
-      toast.error(error.response?.data?.message || "Error fetching subcategory");
+      toast.error(
+        error.response?.data?.message || "Error fetching subcategory",
+      );
       navigate("/insertSubCategory");
     } finally {
       setLoading(false);
@@ -48,22 +52,26 @@ const EditSubCategory = () => {
 
     try {
       setUpdating(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${backendUrl}/api/product/subcategories/${id}`,
         { name: subCategoryName },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       if (response.data.success) {
-        toast.success(response.data.message || "Subcategory updated successfully");
+        toast.success(
+          response.data.message || "Subcategory updated successfully",
+        );
         navigate("/insertSubCategory");
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
       console.error("Error updating subcategory:", error);
-      toast.error(error.response?.data?.message || "Error updating subcategory");
+      toast.error(
+        error.response?.data?.message || "Error updating subcategory",
+      );
     } finally {
       setUpdating(false);
     }

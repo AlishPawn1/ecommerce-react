@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
-    "generate-slugs": "node generateSlugs.js"
+    "generate-slugs": "node generateSlugs.js",
+    "format": "prettier --write .",
+  "build": "echo 'No build step required for Node.js ES modules'"
   },
   "author": "",
   "license": "ISC",
@@ -28,9 +30,13 @@
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.10",
     "react-icons": "^5.5.0",
-    "serverless-http": "^3.5.0",
     "slugify": "^1.6.6",
     "stripe": "^17.7.0",
     "validator": "^13.15.15"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.3",
+    "@babel/preset-env": "^7.28.3"
   }
 }

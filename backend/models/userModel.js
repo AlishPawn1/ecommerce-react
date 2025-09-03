@@ -6,18 +6,18 @@ const userSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     number: { type: String, required: true },
-    address: { type: String, required: true },  
+    address: { type: String, required: true },
     cartData: { type: Object, default: {} },
     isVerified: { type: Boolean, default: false },
     verificationCode: { type: String },
     verificationCodeExpires: { type: Date },
-    image: { type: String, default: '' },
+    image: { type: String, default: "" },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
   },
-  { minimize: false }
+  { minimize: false },
 );
 
-const userModel = mongoose.models.user || mongoose.model('user', userSchema);
+const userModel = mongoose.models.user || mongoose.model("user", userSchema);
 
 export default userModel;

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { AiOutlineLeft, AiOutlineRight } from 'react-icons/ai';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { AiOutlineLeft, AiOutlineRight } from "react-icons/ai";
 
 const Feedback = () => {
   const [feedback, setFeedback] = useState([]);
@@ -12,13 +12,13 @@ const Feedback = () => {
   useEffect(() => {
     const fetchFeedback = async () => {
       try {
-        const response = await axios.get('/api/contact-messages');
+        const response = await axios.get("/api/contact-messages");
         setFeedback(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Failed to fetch feedback');
+        setError("Failed to fetch feedback");
         setLoading(false);
-        console.error('Error fetching feedback:', err);
+        console.error("Error fetching feedback:", err);
       }
     };
 
@@ -35,14 +35,14 @@ const Feedback = () => {
   if (error) return <div className="text-center text-danger">{error}</div>;
 
   const paginationBtnStyle = {
-    height: '25px',
-    width: '25px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderColor: '#000',
-    transition: 'background-color 0.3s',
-    borderRadius: '5px',
+    height: "25px",
+    width: "25px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: "#000",
+    transition: "background-color 0.3s",
+    borderRadius: "5px",
   };
 
   return (
@@ -76,22 +76,27 @@ const Feedback = () => {
         </table>
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <nav className="pagination justify-content-center gap-2 mt-6" aria-label="Feedback pagination">
+          <nav
+            className="pagination justify-content-center gap-2 mt-6"
+            aria-label="Feedback pagination"
+          >
             <button
               style={{
                 ...paginationBtnStyle,
-                backgroundColor: currentPage === 1 ? '#e0e0e0' : '#000',
-                color: currentPage === 1 ? '#888' : '#fff',
-                cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                backgroundColor: currentPage === 1 ? "#e0e0e0" : "#000",
+                color: currentPage === 1 ? "#888" : "#fff",
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
               }}
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
               aria-label="Previous page"
-              onMouseEnter={e => {
-                if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled)
+                  e.currentTarget.style.backgroundColor = "#333";
               }}
-              onMouseLeave={e => {
-                if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled)
+                  e.currentTarget.style.backgroundColor = "#000";
               }}
             >
               <AiOutlineLeft />
@@ -101,16 +106,18 @@ const Feedback = () => {
                 key={page}
                 style={{
                   ...paginationBtnStyle,
-                  backgroundColor: currentPage === page ? '#000' : '#fff',
-                  color: currentPage === page ? '#fff' : '#000',
-                  cursor: 'pointer',
+                  backgroundColor: currentPage === page ? "#000" : "#fff",
+                  color: currentPage === page ? "#fff" : "#000",
+                  cursor: "pointer",
                 }}
                 onClick={() => setCurrentPage(page)}
-                onMouseEnter={e => {
-                  if (currentPage !== page) e.currentTarget.style.backgroundColor = '#ddd';
+                onMouseEnter={(e) => {
+                  if (currentPage !== page)
+                    e.currentTarget.style.backgroundColor = "#ddd";
                 }}
-                onMouseLeave={e => {
-                  if (currentPage !== page) e.currentTarget.style.backgroundColor = '#fff';
+                onMouseLeave={(e) => {
+                  if (currentPage !== page)
+                    e.currentTarget.style.backgroundColor = "#fff";
                 }}
                 aria-label={`Go to page ${page}`}
               >
@@ -120,18 +127,23 @@ const Feedback = () => {
             <button
               style={{
                 ...paginationBtnStyle,
-                backgroundColor: currentPage === totalPages ? '#e0e0e0' : '#000',
-                color: currentPage === totalPages ? '#888' : '#fff',
-                cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                backgroundColor:
+                  currentPage === totalPages ? "#e0e0e0" : "#000",
+                color: currentPage === totalPages ? "#888" : "#fff",
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
               }}
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
               aria-label="Next page"
-              onMouseEnter={e => {
-                if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#333';
+              onMouseEnter={(e) => {
+                if (!e.currentTarget.disabled)
+                  e.currentTarget.style.backgroundColor = "#333";
               }}
-              onMouseLeave={e => {
-                if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#000';
+              onMouseLeave={(e) => {
+                if (!e.currentTarget.disabled)
+                  e.currentTarget.style.backgroundColor = "#000";
               }}
             >
               <AiOutlineRight />

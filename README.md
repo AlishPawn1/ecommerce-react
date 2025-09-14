@@ -41,7 +41,7 @@ docker build -t frontend-panel ./frontend
 docker build -t admin-panel ./admin
 
 docker run -d -p 4000:4000 --name backend-panel backend-panel
-docker run -d -p 3000:3000 --name frontend-panel frontend-panel
+docker run -d -p 5173:5173 --name frontend-panel frontend-panel
 docker run -d -p 5174:5174 --name admin-panel admin-panel
 ```
 
@@ -124,16 +124,22 @@ cd ecommerce-react
 ### 2. Environment Variables
 Create `.env` files in `backend/`, `frontend/`, and `admin/` as needed. Example for backend:
 ```
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=your_admin_password
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_email_password
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+MONGODB_URL=mongodb+srv://alishpawn00:LJihXpUF5AbcB8tk@cluster0.i2bgj.mongodb.net
+CLOUDINARY_API_KEY=242246242585393
+CLOUDINARY_SECRET_KEY=JMd6MBTCHmsdWJKpCgPjb1uVOuU
+CLOUDINARY_NAME=dbcjvgzpk
+JWT_SECRET=dress
+ADMIN_EMAIL=admin@gmail.com
+ADMIN_PASSWORD=admin123
+STRIPE_SECRET_KEY=sk_test_51PhZNfRqbIai3bkj3wSIoLzsLBorzOA2ICDy6hckrO936PKz26Lsu4hEqudTwlFwU6c0Tz1do7ZN7kd5jEg8pi4M00Y0Lap67P
+KHALTI_SECRET_KEY=0bdb890d7b514ec281731b27fa157eb8
+EMAIL_USER=alishpawn00@gmail.com
+EMAIL_PASS=rhtyqznbzphmvozg
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+PORT=4000 
 FRONTEND_URLS=http://localhost:5173,http://localhost:5174
+BACKEND_URL=http://localhost:4000
 ```
 
 ### 3. Install Dependencies

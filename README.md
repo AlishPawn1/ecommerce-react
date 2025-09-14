@@ -9,8 +9,8 @@
 
 1. **Clone the repository:**
    ```sh
-   git clone <your-repo-url>
-   cd <your-project-folder>
+   git clone <https://github.com/AlishPawn1/ecommerce-react>
+   cd <ecommerce-react>
    ```
 
 2. **Start all services with Docker Compose:**

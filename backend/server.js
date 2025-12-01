@@ -80,6 +80,7 @@ async function initializeServices() {
   if (initialized) return;
   
   console.log("🔄 Initializing services...");
+  console.log("Node.js version:", process.version);
   console.log("Environment check:", {
     MONGODB_URL: process.env.MONGODB_URL ? "✓ Set" : "✗ Missing",
     CLOUDINARY_NAME: process.env.CLOUDINARY_NAME ? "✓ Set" : "✗ Missing",
@@ -87,12 +88,15 @@ async function initializeServices() {
   });
   
   try {
+    console.log("🔗 Connecting to MongoDB...");
     await connectDB();
+    console.log("☁️ Configuring Cloudinary...");
     await connectCloudinary();
     initialized = true;
     console.log("✅ Services initialized successfully");
   } catch (error) {
-    console.error("❌ Failed to initialize services:", error);
+    console.error("❌ Failed to initialize services:", error.message);
+    console.error("❌ Full error:", error);
     throw error;
   }
 }

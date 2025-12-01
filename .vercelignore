@@ -1,0 +1,17 @@
+node_modules/
+.git
+.gitignore
+.env*.local
+*.log
+.next/
+.vercel/
+.vscode/
+.DS_Store
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.der
+*.csr
+*.pfx

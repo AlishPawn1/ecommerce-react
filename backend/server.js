@@ -60,6 +60,14 @@ app.use("/api/newsletter", newsletterRoute);
 app.get("/", (req, res) => res.status(200).send("Server is running!"));
 app.get("/api", (req, res) => res.status(200).json({ message: "API Working" }));
 
+// Catch-all handler for non-API routes
+app.get("*", (req, res) => {
+  if (req.url.startsWith("/api")) {
+    return res.status(404).json({ success: false, message: "API endpoint not found" });
+  }
+  res.status(200).send("Backend server is running! Use /api endpoints for API access.");
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error("Server Error:", err.stack);

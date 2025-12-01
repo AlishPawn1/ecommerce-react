@@ -10,7 +10,14 @@
     {
       "src": "/api/(.*)",
       "dest": "server.js"
+    },
+    {
+      "src": "/",
+      "dest": "server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "server.js"
     }
-  ],
-  "buildCommand": "echo 'No build step required'"
+  ]
 }

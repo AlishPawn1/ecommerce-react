@@ -8,7 +8,7 @@ const Test = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/product/list",
+        "https://newari-backend.vercel.app/api/product/list",
       );
       setProducts(response.data.products);
       console.log(response.data.products);

@@ -25,23 +25,79 @@ const frontendUrls = (process.env.FRONTEND_URLS || "")
   .map((url) => url.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
+console.log("📋 Configured frontend URLs:", frontendUrls);
+
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || frontendUrls.includes(origin)) {
-      callback(null, origin || true);
+    console.log("🌐 CORS request from origin:", origin);
+    
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+    
+    // Check if origin is in allowed list
+    if (frontendUrls.includes(origin)) {
+      callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      console.log("❌ CORS blocked origin:", origin);
+      console.log("✅ Allowed origins:", frontendUrls);
+      callback(new Error(`CORS: Origin ${origin} not allowed`));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With",
+    "Accept",
+    "Origin",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers"
+  ],
   credentials: true,
+  optionsSuccessStatus: 200 // Support legacy browsers
 };
+
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
+// Initialize services for serverless
+const initPromise = initializeServices().catch((error) => {
+  console.error("❌ Failed to initialize services:", error);
+  throw error;
+});
+
+// Ensure initialization before handling requests
+app.use(async (req, res, next) => {
+  try {
+    await initPromise;
+    next();
+  } catch (error) {
+    console.error("❌ Service initialization failed:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Service initialization failed",
+      error: error.message 
+    });
+  }
+});
+
+// Additional CORS headers for better compatibility
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url} from ${req.headers.origin}`);
+  const origin = req.headers.origin;
+  console.log(`${req.method} ${req.url} from ${origin}`);
+  
+  // Set CORS headers explicitly for better compatibility
+  if (frontendUrls.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+    res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Max-Age', '86400'); // Cache preflight for 24 hours
+  }
+  
   next();
 });
 
@@ -60,6 +116,17 @@ app.use("/api/newsletter", newsletterRoute);
 app.get("/", (req, res) => res.status(200).send("Server is running!"));
 app.get("/api", (req, res) => res.status(200).json({ message: "API Working" }));
 
+// CORS test endpoint
+app.get("/api/cors-test", (req, res) => {
+  res.status(200).json({ 
+    success: true,
+    message: "CORS is working",
+    origin: req.headers.origin,
+    allowedOrigins: frontendUrls,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Catch-all handler for non-API routes
 app.get("*", (req, res) => {
   if (req.url.startsWith("/api")) {
@@ -70,8 +137,30 @@ app.get("*", (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err.stack);
-  res.status(500).json({ success: false, message: "Server error" });
+  console.error("🚨 Server Error:", err.message);
+  console.error("Stack trace:", err.stack);
+  console.error("Request details:", {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent']
+  });
+  
+  // Handle CORS errors specifically
+  if (err.message.includes('CORS')) {
+    return res.status(403).json({ 
+      success: false, 
+      message: "CORS error: Origin not allowed",
+      origin: req.headers.origin,
+      allowedOrigins: frontendUrls
+    });
+  }
+  
+  res.status(500).json({ 
+    success: false, 
+    message: process.env.NODE_ENV === 'production' ? "Internal server error" : err.message,
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+  });
 });
 
 // Initialize services
@@ -101,18 +190,18 @@ async function initializeServices() {
   }
 }
 
-// For Vercel serverless function, initialize services once on cold start
-initializeServices().catch((error) => {
-  console.error("❌ Failed to initialize services:", error);
-  process.exit(1);
-});
-
-// Start Express server for local/Node.js deployment
-const PORT = process.env.PORT || 5000;
-initializeServices().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
+// Start Express server for local/Node.js deployment only
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  initPromise.then(() => {
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  }).catch((error) => {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
   });
-}).catch((error) => {
-  console.error("❌ Failed to initialize services:", error);
-});
+}
+
+// Export for Vercel serverless function
+export default app;

@@ -12,7 +12,7 @@ const Sidebar = () => {
     <div className="w-[18%] min-h-screen border-r-2 border-gray-300">
       <ul className="primary-menu flex flex-col gap-4 pt-6 pl-[20%] text-[15px]">
         <li>
-          <NavLink to="http://localhost:5173/">
+          <NavLink to="https://newari-frontend.vercel.app/">
             <i className="fa-solid fa-house-chimney"></i>
             <span className="hidden md:block">View Site</span>
           </NavLink>

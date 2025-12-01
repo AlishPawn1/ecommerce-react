@@ -9,7 +9,7 @@
     "server": "nodemon server.js",
     "generate-slugs": "node generateSlugs.js",
     "format": "prettier --write .",
-  "build": "echo 'No build step required for Node.js ES modules'"
+    "build": "echo 'No build step required for Node.js ES modules'"
   },
   "author": "",
   "license": "ISC",

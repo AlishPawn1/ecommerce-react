@@ -5,9 +5,13 @@
   "scripts": {
     "install:frontend": "cd frontend && npm install",
     "build:frontend": "cd frontend && npm run build",
-    "start": "cd frontend && npm run preview"
+    "start": "cd frontend && npm run preview",
+    "install:admin": "cd admin && npm install",
+    "build:admin": "cd admin && npm run build",
+    "start:admin": "cd admin && npm run preview"
   },
   "workspaces": [
-    "frontend"
+    "frontend",
+    "admin"
   ]
 }

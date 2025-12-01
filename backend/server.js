@@ -1,5 +1,8 @@
 import "dotenv/config";
 import express from "express";
+
+// Disable debug logging to avoid module issues in Vercel
+process.env.DEBUG = "";
 // import serverless from "serverless-http";
 import cors from "cors";
 import connectDB from "./config/mongodb.js";

@@ -78,15 +78,29 @@ app.use((err, req, res, next) => {
 let initialized = false;
 async function initializeServices() {
   if (initialized) return;
-  await connectDB();
-  await connectCloudinary();
-  initialized = true;
-  console.log("✅ Services initialized successfully");
+  
+  console.log("🔄 Initializing services...");
+  console.log("Environment check:", {
+    MONGODB_URL: process.env.MONGODB_URL ? "✓ Set" : "✗ Missing",
+    CLOUDINARY_NAME: process.env.CLOUDINARY_NAME ? "✓ Set" : "✗ Missing",
+    JWT_SECRET: process.env.JWT_SECRET ? "✓ Set" : "✗ Missing"
+  });
+  
+  try {
+    await connectDB();
+    await connectCloudinary();
+    initialized = true;
+    console.log("✅ Services initialized successfully");
+  } catch (error) {
+    console.error("❌ Failed to initialize services:", error);
+    throw error;
+  }
 }
 
 // For Vercel serverless function, initialize services once on cold start
 initializeServices().catch((error) => {
   console.error("❌ Failed to initialize services:", error);
+  process.exit(1);
 });
 
 // Start Express server for local/Node.js deployment

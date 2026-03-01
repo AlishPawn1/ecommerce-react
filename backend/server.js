@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 // import serverless from "serverless-http";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from 'url';
 import connectDB from "./config/mongodb.js";
 import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/userRoute.js";
@@ -14,11 +16,17 @@ import chatRoute from "./routes/chat.js";
 import subscribeRoute from "./routes/subscribe.js";
 import newsletterRoute from "./routes/newsletterRoute.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const frontendUrls = (process.env.FRONTEND_URLS || "")
   .split(",")

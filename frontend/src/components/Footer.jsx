@@ -45,7 +45,7 @@ const Footer = () => {
           </div>
           <div>
             <h3 className="text-xl font-medium mb-5 uppercase">Get in touch</h3>
-            <ul className="flex flex-col gap-1 text-gray-600 capitalize">
+            <ul className="flex flex-col gap-1 text-gray-600 ">
               <li>
                 <Link to="tel: +977 9876543210">+977 9876543210</Link>
               </li>
@@ -60,7 +60,7 @@ const Footer = () => {
         <div>
           <hr />
           <p className="py-5 text-sm text-center">
-            Copyright 2025. Tradional Newari Dress. All right reserve
+            Copyright {new Date().getFullYear()}. Tradional Newari Dress. All right reserved
           </p>
         </div>
       </div>

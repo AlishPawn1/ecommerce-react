@@ -8,6 +8,9 @@ export default defineConfig({
   server: {
     port: 5174, // Ensure admin frontend runs on port 5174
     host: true,
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       "/api": {
         target: "http://localhost:4000",

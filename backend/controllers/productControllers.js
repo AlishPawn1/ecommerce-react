@@ -41,15 +41,9 @@ const addProduct = async (req, res) => {
       req.files.image4?.[0],
     ].filter(Boolean);
 
-    const imageUrls = await Promise.all(
-      imageFiles.map(async (item) => {
-        const result = await cloudinary.uploader.upload(item.path, {
-          resource_type: "image",
-          folder: "products",
-        });
-        return result.secure_url;
-      }),
-    );
+    // Generate local URLs for uploaded images
+    const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+    const imageUrls = imageFiles.map(file => `${baseUrl}/uploads/${file.filename}`);
 
     if (imageUrls.length === 0) {
       return res
@@ -131,15 +125,9 @@ const updateProduct = async (req, res) => {
         req.files.image4?.[0],
       ].filter(Boolean);
 
-      imageUrls = await Promise.all(
-        imageFiles.map(async (item) => {
-          const result = await cloudinary.uploader.upload(item.path, {
-            resource_type: "image",
-            folder: "products",
-          });
-          return result.secure_url;
-        }),
-      );
+      // Generate local URLs for new uploaded images
+      const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+      imageUrls = imageFiles.map(file => `${baseUrl}/uploads/${file.filename}`);
     }
 
     product.name = name || product.name;

@@ -28,22 +28,36 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const frontendUrls = (process.env.FRONTEND_URLS || "")
+const frontendUrls = (process.env.FRONTEND_URLS || "http://localhost:5173,http://localhost:5174")
   .split(",")
   .map((url) => url.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || frontendUrls.includes(origin)) {
-      callback(null, origin || true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
     }
+    
+    // Allow if origin is in the frontend URLs list
+    if (frontendUrls.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // In development, allow localhost origins
+    if (process.env.NODE_ENV !== 'production' && (origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+      return callback(null, true);
+    }
+    
+    console.warn(`CORS blocked origin: ${origin}. Allowed origins:`, frontendUrls);
+    callback(new Error(`Not allowed by CORS. Origin: ${origin}`));
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "token"],
+  exposedHeaders: ["Content-Range", "X-Content-Range"],
   credentials: true,
+  optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));

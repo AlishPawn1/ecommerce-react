@@ -8,6 +8,7 @@ export default defineConfig({
   server: {
     port: 5174, // Ensure admin frontend runs on port 5174
     host: true,
+allowedHosts: ['adminnewaridress.expertservicehub.com'],
     watch: {
       usePolling: true,
     },

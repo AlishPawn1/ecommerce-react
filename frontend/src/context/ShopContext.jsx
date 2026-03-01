@@ -291,7 +291,6 @@ const ShopContextProvider = (props) => {
     const storedToken = localStorage.getItem("token");
     const storedUserId = localStorage.getItem("userId");
     const storedName = localStorage.getItem("name"); // Changed to 'name'
-    console.log("Initializing user:", { storedUserId, storedName });
 
     if (storedToken) {
       setToken(storedToken);

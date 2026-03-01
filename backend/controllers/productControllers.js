@@ -170,9 +170,11 @@ const listProduct = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in listProduct:", error);
+    console.error("Error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to retrieve products",
+      error: error.message,
     });
   }
 };
@@ -959,13 +961,13 @@ const getTopProducts = async (req, res) => {
       .select("averageRating reviewCount")
       .lean();
 
-    // Calculate global average rating C
+    // Calculate global average rating C with null checks
     const totalRatingSum = allProducts.reduce(
-      (sum, p) => sum + p.averageRating * p.reviewCount,
+      (sum, p) => sum + (p.averageRating || 0) * (p.reviewCount || 0),
       0,
     );
     const totalReviewCount = allProducts.reduce(
-      (sum, p) => sum + p.reviewCount,
+      (sum, p) => sum + (p.reviewCount || 0),
       0,
     );
     const C = totalReviewCount ? totalRatingSum / totalReviewCount : 0;
@@ -976,10 +978,12 @@ const getTopProducts = async (req, res) => {
     let products = await productModel.find().lean();
 
     if (by === "averageRating") {
-      // Add Bayesian score to each product
+      // Add Bayesian score to each product with null checks
       products = products.map((p) => {
+        const avgRating = p.averageRating || 0;
+        const revCount = p.reviewCount || 0;
         const score =
-          (p.averageRating * p.reviewCount + C * m) / (p.reviewCount + m);
+          (avgRating * revCount + C * m) / (revCount + m);
         return { ...p, score };
       });
 
@@ -993,12 +997,12 @@ const getTopProducts = async (req, res) => {
       console.log("Sorted by Bayesian score:");
       products.forEach((p) => {
         console.log(
-          `- ${p.name} | averageRating: ${p.averageRating} | reviewCount: ${p.reviewCount} | score: ${p.score.toFixed(2)}`,
+          `- ${p.name} | averageRating: ${p.averageRating || 0} | reviewCount: ${p.reviewCount || 0} | score: ${p.score.toFixed(2)}`,
         );
       });
     } else if (by === "viewCount") {
-      // Sort by viewCount descending and limit
-      products = products.sort((a, b) => b.viewCount - a.viewCount).slice(0, 5);
+      // Sort by viewCount descending and limit with null checks
+      products = products.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 5);
     }
 
     res.json({ success: true, data: products });
